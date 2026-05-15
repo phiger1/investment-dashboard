@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BNY — Investment Overview</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --sidebar-bg: #18182A;
+    --page-bg: #F0F0EE;
+    --card-bg: #FFFFFF;
+    --border: rgba(0,0,0,0.07);
+    --border-mid: rgba(0,0,0,0.055);
+    --border-light: rgba(0,0,0,0.038);
+    --text-primary: #111111;
+    --text-secondary: #5A5A5A;
+    --text-tertiary: #999999;
+    --teal: #00C896;
+    --green: #1B7A3E;
+    --green-bg: #E6F4EC;
+    --red: #C0392B;
+    --red-bg: #FDECEA;
+    --amber: #92620A;
+    --amber-bg: #FEF3DC;
+    --blue: #1A56B0;
+    --blue-bg: #E8F0FE;
+    --sidebar-w: 188px;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  }
+
+  html, body { height: 100%; font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif; background: var(--page-bg); color: var(--text-primary); font-size: 14px; -webkit-font-smoothing: antialiased; }
+  .shell { display: flex; height: 100vh; overflow: hidden; }
+  svg { display: block; }
+
+  /* Sidebar */
+  .sidebar { width: var(--sidebar-w); background: var(--sidebar-bg); display: flex; flex-direction: column; flex-shrink: 0; }
+  .sidebar-logo { padding: 24px 20px 28px; display: flex; align-items: center; gap: 7px; }
+  .logo-text { color: white; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+  .sidebar-nav { flex: 1; padding: 4px 10px; display: flex; flex-direction: column; gap: 2px; }
+  .nav-item { display: flex; align-items: center; gap: 11px; padding: 9px 12px; font-size: 13.5px; color: rgba(255,255,255,0.42); cursor: pointer; transition: all 0.14s; border-radius: 8px; }
+  .nav-item:hover { color: rgba(255,255,255,0.78); background: rgba(255,255,255,0.06); }
+  .nav-item.active { color: white; background: rgba(255,255,255,0.1); font-weight: 500; }
+  .nav-icon { display: flex; align-items: center; justify-content: center; width: 18px; flex-shrink: 0; }
+  .sidebar-footer { padding: 12px 10px 20px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 1px; }
+  .footer-item { display: flex; align-items: center; gap: 11px; padding: 8px 12px; font-size: 13px; color: rgba(255,255,255,0.38); cursor: pointer; border-radius: 8px; transition: all 0.14s; }
+  .footer-item:hover { color: rgba(255,255,255,0.68); background: rgba(255,255,255,0.06); }
+  .avatar { width: 27px; height: 27px; border-radius: 50%; background: rgba(255,255,255,0.14); display: flex; align-items: center; justify-content: center; font-size: 10px; color: white; font-weight: 600; flex-shrink: 0; }
+
+  /* Main */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+  .topbar { height: 50px; background: var(--page-bg); display: flex; align-items: center; justify-content: space-between; padding: 0 32px 0 18px; flex-shrink: 0; }
+  .icon-btn { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-tertiary); transition: all 0.14s; border: none; background: transparent; }
+  .icon-btn:hover { background: rgba(0,0,0,0.07); color: var(--text-primary); }
+  .topbar-right { display: flex; align-items: center; gap: 4px; }
+
+  /* Content / views */
+  .content { flex: 1; overflow-y: auto; position: relative; }
+  .content::-webkit-scrollbar { width: 5px; }
+  .content::-webkit-scrollbar-track { background: transparent; }
+  .content::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.11); border-radius: 3px; }
+
+  .view { padding: 30px 36px 48px; display: none; }
+  .view.active { display: block; animation: viewIn 0.18s ease; }
+  @keyframes viewIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
+
+  /* Back nav */
+  .back-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary); background: none; border: none; cursor: pointer; padding: 0; margin-bottom: 16px; transition: color 0.13s; }
+  .back-btn:hover { color: var(--text-primary); }
+
+  /* Page header */
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 26px; padding-bottom: 22px; border-bottom: 1px solid var(--border-mid); }
+  .page-header h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; }
+  .page-header p { font-size: 14px; color: var(--text-secondary); margin-top: 3px; }
+  .btn-primary { display: flex; align-items: center; gap: 7px; background: #111; color: white; border: none; padding: 10px 18px; border-radius: 10px; font-size: 13.5px; font-weight: 500; cursor: pointer; transition: opacity 0.14s; white-space: nowrap; flex-shrink: 0; }
+  .btn-primary:hover { opacity: 0.82; }
+  .btn-outline { display: flex; align-items: center; gap: 7px; background: white; color: var(--text-primary); border: 1px solid var(--border-mid); padding: 8px 16px; border-radius: 9px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.13s; white-space: nowrap; }
+  .btn-outline:hover { border-color: #aaa; }
+  .btn-outline.danger { color: var(--red); border-color: #f5c6c6; }
+  .btn-outline.danger:hover { background: var(--red-bg); }
+
+  /* AI bar */
+  .ai-bar { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; display: flex; align-items: center; gap: 10px; margin-bottom: 26px; cursor: text; transition: border-color 0.14s; box-shadow: var(--shadow); }
+  .ai-bar:hover { border-color: #bbb; }
+  .ai-placeholder { font-size: 13.5px; color: var(--text-tertiary); flex: 1; }
+  .ai-shortcut { font-size: 11px; color: var(--text-tertiary); background: var(--page-bg); border: 1px solid rgba(0,0,0,0.1); border-radius: 5px; padding: 2px 7px; }
+
+  /* Section label */
+  .section-label { font-size: 11px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 11px; margin-top: 30px; }
+
+  /* Card */
+  .card { background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); }
+  .card-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 22px; border-bottom: 1px solid var(--border-light); }
+  .card-title-text { font-size: 15px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.01em; }
+  .card-body { padding: 20px 22px; }
+  .card-header-right { display: flex; align-items: center; gap: 10px; }
+
+  /* Expand button */
+  .expand-btn { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); background: transparent; color: var(--text-tertiary); cursor: pointer; transition: all 0.13s; flex-shrink: 0; }
+  .expand-btn:hover { background: var(--page-bg); color: var(--text-primary); border-color: #bbb; }
+
+  /* Badges */
+  .badge { font-size: 12px; font-weight: 500; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+  .badge-danger  { background: var(--red-bg);   color: var(--red);   }
+  .badge-warning { background: var(--amber-bg); color: var(--amber); }
+  .badge-success { background: var(--green-bg); color: var(--green); }
+  .badge-info    { background: var(--blue-bg);  color: var(--blue);  }
+
+  /* Grids */
+  .grid-5 { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* KPI cards */
+  .kpi-card { padding: 18px 20px; }
+  .kpi-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
+  .kpi-val { font-size: 26px; font-weight: 700; line-height: 1; letter-spacing: -0.03em; }
+  .kpi-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 6px; }
+
+  /* Alert rows */
+  .alert-row { display: flex; align-items: center; gap: 14px; padding: 14px 22px; cursor: pointer; transition: background 0.13s; }
+  .alert-row:hover { background: #FAFAFA; }
+  .alert-row + .alert-row { border-top: 1px solid var(--border-light); }
+  .alert-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .alert-content { flex: 1; min-width: 0; }
+  .alert-title { font-size: 13.5px; font-weight: 500; }
+  .alert-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+  .chevron { color: var(--text-tertiary); display: flex; flex-shrink: 0; }
+
+  /* ── AI Alert cards (accordion) ── */
+  .ai-alert-card { background: white; border-radius: var(--radius); border: 1px solid var(--border); border-left-width: 3px; box-shadow: var(--shadow); margin-bottom: 8px; overflow: hidden; }
+  .ai-alert-card.sev-breach  { border-left-color: var(--red); }
+  .ai-alert-card.sev-watch   { border-left-color: var(--amber); }
+  .ai-alert-card.sev-monitor { border-left-color: var(--blue); }
+
+  /* Collapsed row — always visible */
+  .ai-alert-collapsed { display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; transition: background 0.13s; user-select: none; }
+  .ai-alert-collapsed:hover { background: #FAFAF9; }
+  .ai-alert-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .ai-alert-body { flex: 1; min-width: 0; }
+  .ai-alert-title { font-size: 13.5px; font-weight: 500; color: var(--text-primary); }
+  .ai-alert-suggest { font-size: 12px; color: var(--text-tertiary); margin-top: 3px; display: flex; align-items: baseline; gap: 5px; }
+  .ai-suggest-text { color: var(--text-secondary); }
+  .ai-chev { color: var(--text-tertiary); display: flex; flex-shrink: 0; transition: transform 0.2s ease; }
+  .ai-chev.open { transform: rotate(180deg); }
+
+  /* Expanded content */
+  .ai-alert-expanded { border-top: 1px solid var(--border-light); padding: 14px 16px 16px; display: none; }
+  .ai-alert-expanded.open { display: block; animation: expandIn 0.16s ease; }
+  @keyframes expandIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+
+  /* AI reasoning block */
+  .ai-reasoning { background: #F7F7F5; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 11px 13px; font-size: 12.5px; color: var(--text-secondary); line-height: 1.65; margin-bottom: 13px; display: flex; gap: 9px; align-items: flex-start; }
+  .ai-spark-icon { flex-shrink: 0; margin-top: 2px; }
+
+  /* Action row */
+  .ai-alert-actions { display: flex; align-items: center; gap: 8px; position: relative; flex-wrap: wrap; }
+  .ai-primary-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; padding: 7px 15px; border-radius: 8px; border: none; background: #111; color: white; cursor: pointer; transition: all 0.15s; font-family: inherit; white-space: nowrap; }
+  .ai-primary-btn:hover:not(:disabled) { opacity: 0.82; }
+  .ai-primary-btn:disabled { cursor: default; }
+  .ai-primary-btn.done { background: var(--green) !important; opacity: 1 !important; }
+  .ai-more-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; color: var(--text-secondary); background: none; border: 1px solid var(--border-mid); border-radius: 8px; cursor: pointer; font-family: inherit; padding: 7px 12px; transition: all 0.13s; white-space: nowrap; }
+  .ai-more-btn:hover { border-color: #aaa; color: var(--text-primary); }
+  .ai-detail-link { font-size: 13px; color: var(--text-tertiary); cursor: pointer; margin-left: auto; transition: color 0.13s; white-space: nowrap; }
+  .ai-detail-link:hover { color: var(--text-primary); }
+
+  /* Options dropdown */
+  .opts-dropdown { display: none; position: absolute; top: calc(100% + 6px); left: 0; background: white; border: 1px solid var(--border-mid); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.05); padding: 6px; z-index: 200; min-width: 260px; }
+  .opts-dropdown.open { display: block; animation: dropIn 0.14s ease; }
+  @keyframes dropIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+  .opts-sep { height: 1px; background: var(--border-light); margin: 4px 4px; }
+  .opts-item { padding: 9px 12px; border-radius: 6px; cursor: pointer; transition: background 0.12s; }
+  .opts-item:hover { background: var(--page-bg); }
+  .opts-item-label { font-size: 13px; color: var(--text-primary); font-weight: 500; }
+  .opts-item-sub { font-size: 11.5px; color: var(--text-tertiary); margin-top: 2px; line-height: 1.4; }
+  .opts-item.danger .opts-item-label { color: var(--red); }
+  .opts-item.muted .opts-item-label { color: var(--text-tertiary); font-weight: 400; }
+
+  /* Section label with right slot */
+  .section-label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 11px; margin-top: 30px; }
+  .section-label-row .section-label { margin: 0; }
+  .eliza-tag { font-size: 11px; color: var(--text-tertiary); display: flex; align-items: center; gap: 4px; font-weight: 400; text-transform: none; letter-spacing: 0; }
+
+  /* ── Horizontal alert cards ── */
+  .alerts-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+  .aah { background: white; border-radius: var(--radius); border: 1px solid var(--border); border-top: 3px solid transparent; box-shadow: var(--shadow); display: flex; flex-direction: column; }
+  .aah.sev-breach  { border-top-color: var(--red); }
+  .aah.sev-watch   { border-top-color: var(--amber); }
+  .aah.sev-monitor { border-top-color: var(--blue); }
+
+  .aah-head { display: flex; align-items: center; gap: 8px; padding: 13px 15px 9px; }
+  .aah-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .aah-title { flex: 1; font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
+
+  .aah-facts { padding: 0 15px 11px; display: flex; flex-direction: column; gap: 7px; }
+  .aah-fact { display: grid; grid-template-columns: 90px 1fr; align-items: baseline; gap: 0 8px; }
+  .aah-fact-label { font-size: 11.5px; color: var(--text-tertiary); }
+  .aah-fact-right { display: flex; align-items: baseline; gap: 5px; flex-wrap: wrap; }
+  .aah-fact-val { font-size: 13px; font-weight: 600; }
+  .aah-fact-ctx { font-size: 11.5px; color: var(--text-tertiary); }
+
+  .aah-rec { padding: 10px 15px; border-top: 1px solid var(--border-light); font-size: 12px; color: var(--text-secondary); line-height: 1.55; display: flex; gap: 7px; align-items: flex-start; flex: 1; }
+  .aah-spark { flex-shrink: 0; margin-top: 2px; }
+
+  .aah-actions { padding: 10px 15px 13px; border-top: 1px solid var(--border-light); display: flex; align-items: center; gap: 7px; position: relative; flex-wrap: wrap; }
+
+  /* Alloc bar */
+  .alloc-bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; gap: 2px; }
+  .alloc-seg { height: 100%; }
+  .legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; margin-top: 14px; }
+  .legend-item { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--text-secondary); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Sub-label inside card */
+  .sub-label { font-size: 11px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px; }
+
+  /* Sector rows */
+  .sector-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; }
+  .sector-row + .sector-row { border-top: 1px solid var(--border-light); }
+  .sector-name { font-size: 12.5px; color: var(--text-secondary); width: 96px; flex-shrink: 0; }
+  .bar-track { flex: 1; background: #EAEAE8; border-radius: 2px; height: 5px; }
+  .bar-fill { height: 5px; border-radius: 2px; }
+  .sector-pct { font-size: 12.5px; color: var(--text-primary); font-weight: 500; width: 32px; text-align: right; }
+  .sector-delta { font-size: 11.5px; width: 38px; text-align: right; }
+
+  /* Risk grid */
+  .risk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .risk-cell { background: var(--page-bg); border-radius: var(--radius-sm); padding: 12px 14px; }
+  .risk-cell-label { font-size: 11.5px; color: var(--text-tertiary); margin-bottom: 5px; }
+  .risk-cell-val { font-size: 22px; font-weight: 700; letter-spacing: -0.03em; }
+
+  /* Conc rows */
+  .conc-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; }
+  .conc-row + .conc-row { border-top: 1px solid var(--border-light); }
+  .conc-label { font-size: 13px; color: var(--text-secondary); }
+  .conc-val { font-size: 13px; font-weight: 500; }
+
+  /* Geo rows */
+  .geo-row { display: flex; align-items: center; gap: 12px; padding: 9px 0; }
+  .geo-row + .geo-row { border-top: 1px solid var(--border-light); }
+  .geo-label { font-size: 13px; color: var(--text-secondary); flex: 1; }
+  .geo-bar-track { width: 88px; background: #EAEAE8; border-radius: 2px; height: 5px; flex-shrink: 0; }
+  .geo-pct { font-size: 13px; font-weight: 500; width: 32px; text-align: right; }
+
+  /* Tabs */
+  .tab-strip { display: flex; border-bottom: 1px solid var(--border-light); }
+  .tab { font-size: 13px; font-weight: 500; padding: 10px 18px; color: var(--text-tertiary); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.14s; }
+  .tab.active { color: var(--text-primary); border-bottom-color: var(--text-primary); }
+  .tab:hover:not(.active) { color: var(--text-secondary); }
+
+  /* Divider */
+  .divider { border: none; border-top: 1px solid var(--border-light); margin: 18px 0; }
+
+  /* Manager table */
+  .mgr-table { width: 100%; border-collapse: collapse; }
+  .mgr-table th { font-size: 12px; color: var(--text-tertiary); font-weight: 500; text-align: left; padding: 0 12px 12px 0; border-bottom: 1px solid var(--border-mid); white-space: nowrap; cursor: pointer; user-select: none; }
+  .mgr-table th:hover { color: var(--text-primary); }
+  .mgr-table th.r, .mgr-table td.r { text-align: right; padding-right: 0; }
+  .mgr-table td { font-size: 13.5px; padding: 12px 12px 12px 0; border-bottom: 1px solid var(--border-light); vertical-align: middle; }
+  .mgr-table tr:last-child td { border-bottom: none; }
+  .mgr-table tbody tr { cursor: pointer; transition: background 0.12s; }
+  .mgr-table tbody tr:hover td { background: #FAFAFA; }
+  .mgr-table tr.breach td { background: #FFF7F7; }
+  .mgr-table tr.breach:hover td { background: #FFF0F0; }
+  .mgr-name { font-weight: 500; }
+  .score-wrap { display: flex; align-items: center; gap: 8px; }
+  .score-track { width: 72px; background: #EAEAE8; border-radius: 2px; height: 5px; }
+  .score-fill { height: 5px; border-radius: 2px; }
+  .score-num { font-size: 12px; color: var(--text-tertiary); width: 22px; }
+
+  /* Report rows */
+  .report-row { display: flex; align-items: center; gap: 14px; padding: 13px 0; cursor: pointer; transition: opacity 0.13s; }
+  .report-row:hover { opacity: 0.68; }
+  .report-row + .report-row { border-top: 1px solid var(--border-light); }
+  .report-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .report-name { font-size: 13.5px; font-weight: 500; }
+  .report-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+
+  /* More link */
+  .more-link { font-size: 13px; color: var(--text-secondary); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; margin-top: 14px; }
+  .more-link:hover { color: var(--text-primary); }
+
+  /* ── Fullscreen toolbar ── */
+  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; box-shadow: var(--shadow); flex-wrap: wrap; }
+  .search-field { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 180px; max-width: 280px; }
+  .search-field input { border: none; outline: none; font-size: 13.5px; color: var(--text-primary); background: transparent; width: 100%; font-family: inherit; }
+  .search-field input::placeholder { color: var(--text-tertiary); }
+  .toolbar-sep { width: 1px; height: 20px; background: var(--border-mid); }
+  .filter-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filter-pill { font-size: 12px; font-weight: 500; padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-secondary); cursor: pointer; transition: all 0.13s; font-family: inherit; }
+  .filter-pill:hover { border-color: #aaa; color: var(--text-primary); }
+  .filter-pill.active { background: #111; color: white; border-color: #111; }
+  .filter-pill.f-danger.active { background: var(--red-bg); color: var(--red); border-color: #f5c6c6; }
+  .filter-pill.f-warning.active { background: var(--amber-bg); color: var(--amber); border-color: #fde0a0; }
+  .filter-pill.f-success.active { background: var(--green-bg); color: var(--green); border-color: #c3e6cb; }
+
+  /* ── Manager detail ── */
+  .detail-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; padding-bottom: 22px; border-bottom: 1px solid var(--border-mid); }
+  .detail-name { font-size: 26px; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 8px; }
+  .detail-meta { display: flex; align-items: center; gap: 10px; }
+  .detail-actions { display: flex; gap: 8px; align-items: flex-start; }
+
+  /* Summary metrics strip */
+  .metrics-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .metric-cell { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; box-shadow: var(--shadow); }
+  .metric-label { font-size: 11.5px; color: var(--text-tertiary); margin-bottom: 5px; }
+  .metric-val { font-size: 22px; font-weight: 700; letter-spacing: -0.03em; }
+  .metric-sub { font-size: 11.5px; color: var(--text-tertiary); margin-top: 4px; }
+
+  /* Breach flag cards */
+  .flag-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 20px; margin-bottom: 12px; display: flex; gap: 16px; }
+  .flag-number { width: 28px; height: 28px; border-radius: 50%; background: var(--red-bg); color: var(--red); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .flag-body { flex: 1; }
+  .flag-type { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-tertiary); margin-bottom: 4px; }
+  .flag-title { font-size: 14.5px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+  .flag-vals { display: flex; gap: 24px; }
+  .flag-val-item { }
+  .flag-val-label { font-size: 11px; color: var(--text-tertiary); margin-bottom: 2px; }
+  .flag-val-num { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; }
+  .flag-detected { font-size: 11.5px; color: var(--text-tertiary); margin-top: 10px; }
+
+  /* Timeline */
+  .timeline-item { display: flex; gap: 12px; padding: 10px 0; }
+  .timeline-item + .timeline-item { border-top: 1px solid var(--border-light); }
+  .timeline-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-tertiary); flex-shrink: 0; margin-top: 5px; }
+  .timeline-body { flex: 1; }
+  .timeline-title { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+  .timeline-date { font-size: 11.5px; color: var(--text-tertiary); margin-top: 2px; }
+
+  /* Report detail */
+  .report-detail-header { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 24px; margin-bottom: 20px; box-shadow: var(--shadow); }
+  .report-detail-title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 10px; }
+  .report-detail-meta { display: flex; gap: 16px; align-items: center; }
+  .report-meta-item { font-size: 12.5px; color: var(--text-secondary); display: flex; align-items: center; gap: 5px; }
+  .summary-block { background: #FAFAF9; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 16px 18px; margin-bottom: 20px; font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; }
+  .attr-table { width: 100%; border-collapse: collapse; }
+  .attr-table th { font-size: 12px; color: var(--text-tertiary); font-weight: 500; text-align: left; padding: 0 12px 10px 0; border-bottom: 1px solid var(--border-mid); }
+  .attr-table th.r { text-align: right; padding-right: 0; }
+  .attr-table td { font-size: 13.5px; padding: 11px 12px 11px 0; border-bottom: 1px solid var(--border-light); vertical-align: middle; }
+  .attr-table td.r { text-align: right; padding-right: 0; }
+  .attr-table tr:last-child td { border-bottom: none; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10L16 10M16 10L11 5M16 10L11 15" stroke="#00C896" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="logo-text">BNY</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 9.8L9 3.5L15 9.8V15.5H11.5V11H6.5V15.5H3V9.8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span>Home
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="3" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/><rect x="10" y="3" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="10" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/><rect x="10" y="10" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/></svg></span>Accounts
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 6.5H15M6.5 3.5L3 6.5L6.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 11.5H3M11.5 8.5L15 11.5L11.5 14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Transactions
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M5 3H13C13.55 3 14 3.45 14 4V14C14 14.55 13.55 15 13 15H5C4.45 15 4 14.55 4 14V4C4 3.45 4.45 3 5 3Z" stroke="currentColor" stroke-width="1.5"/><path d="M7 7H11M7 10H11M7 13H9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span>Reporting
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2.5" y="2.5" width="13" height="13" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 9L7.5 11L12.5 6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Compliance
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="footer-item">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="2.5" stroke="currentColor" stroke-width="1.4"/><path d="M9 2.5V4M9 14V15.5M2.5 9H4M14 9H15.5M4.4 4.4L5.5 5.5M12.5 12.5L13.6 13.6M4.4 13.6L5.5 12.5M12.5 5.5L13.6 4.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span>Settings
+      </div>
+      <div class="footer-item">
+        <div class="avatar">MS</div>Meredith S.
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <button class="icon-btn"><svg width="17" height="17" viewBox="0 0 17 17" fill="none"><path d="M2.5 4.5H14.5M2.5 8.5H14.5M2.5 12.5H14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+      <div class="topbar-right">
+        <button class="icon-btn"><svg width="17" height="17" viewBox="0 0 17 17" fill="none"><circle cx="7.5" cy="7.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M13 13L11 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+        <button class="icon-btn"><svg width="17" height="17" viewBox="0 0 17 17" fill="none"><path d="M8.5 2.5C6.3 2.5 5 4.2 5 6V9.5L3.5 11.5H13.5L12 9.5V6C12 4.2 10.7 2.5 8.5 2.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 11.5C7 12.33 7.67 13 8.5 13C9.33 13 10 12.33 10 11.5" stroke="currentColor" stroke-width="1.5"/></svg></button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ═══════════════════════════════════════
+           VIEW: Dashboard
+      ═══════════════════════════════════════ -->
+      <div class="view active" id="view-dashboard">
+
+        <div class="page-header">
+          <div>
+            <h1>Hello, Meredith</h1>
+            <p>Wednesday, May 13 · Investment overview</p>
+          </div>
+          <button class="btn-primary">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1.5V11.5M1.5 6.5H11.5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+            New Report
+          </button>
+        </div>
+
+        <div class="section-label-row" style="margin-top:0">
+          <span class="section-label" style="margin:0">Needs attention</span>
+          <span class="eliza-tag">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 0.5L6.3 3.9H9.8L7 5.9L8.1 9.5L5 7.4L1.9 9.5L3 5.9L0.2 3.9H3.7L5 0.5Z" fill="#7C3AED"/></svg>
+            Eliza · 3 signals from 47 reviewed
+          </span>
+        </div>
+
+        <div class="alerts-grid">
+
+          <!-- Card 1: Two Sigma -->
+          <div class="aah sev-breach">
+            <div class="aah-head">
+              <div class="aah-dot" style="background:var(--red)"></div>
+              <span class="aah-title">Two Sigma</span>
+              <span class="badge badge-danger">3 Breaches</span>
+            </div>
+            <div class="aah-facts">
+              <div class="aah-fact">
+                <span class="aah-fact-label">NVDA weight</span>
+                <div class="aah-fact-right">
+                  <span class="aah-fact-val" style="color:var(--red)">7.2%</span>
+                  <span class="aah-fact-ctx">vs 6.0% limit · +1.2pp &amp; widening</span>
+                </div>
+              </div>
+              <div class="aah-fact">
+                <span class="aah-fact-label">Illiquid</span>
+                <div class="aah-fact-right">
+                  <span class="aah-fact-val" style="color:var(--red)">12.1%</span>
+                  <span class="aah-fact-ctx">vs 8% limit · new as of yesterday</span>
+                </div>
+              </div>
+              <div class="aah-fact">
+                <span class="aah-fact-label">Board report</span>
+                <div class="aah-fact-right">
+                  <span class="aah-fact-val" style="color:var(--amber)">8 days</span>
+                  <span class="aah-fact-ctx">Q3 2023 breach resolved in 36hr</span>
+                </div>
+              </div>
+            </div>
+            <div class="aah-rec">
+              <svg class="aah-spark" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 0.5L7.4 4.4H11.5L8.3 6.8L9.5 11L6 8.6L2.5 11L3.7 6.8L0.5 4.4H4.6L6 0.5Z" fill="#7C3AED"/></svg>
+              NVDA concentration is the root cause of both the single-name and liquidity breach — resolving it should cascade. Today is the right moment: board reporting is 8 days out and Two Sigma historically responds within 36 hours.
+            </div>
+            <div class="aah-actions">
+              <button class="ai-primary-btn" id="btn-ts-primary" onclick="takeAction('ts-primary','Sent to Two Sigma')">Send remediation request</button>
+              <button class="ai-more-btn" onclick="toggleOptions('ts', event)">More <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <div class="opts-dropdown" id="opts-ts">
+                <div class="opts-item danger" onclick="takeAction('ts-primary','Escalated to IC');closeDropdowns()"><div class="opts-item-label">Escalate to Investment Committee</div><div class="opts-item-sub">Triggers formal IC review — use if Two Sigma is unresponsive</div></div>
+                <div class="opts-item" onclick="takeAction('ts-primary','Notice issued');closeDropdowns()"><div class="opts-item-label">Issue formal breach notice</div><div class="opts-item-sub">Generates regulatory documentation, logged to audit trail</div></div>
+                <div class="opts-item" onclick="takeAction('ts-primary','Call booked');closeDropdowns()"><div class="opts-item-label">Schedule emergency review call</div><div class="opts-item-sub">Opens calendar with Two Sigma PM and compliance team</div></div>
+                <div class="opts-sep"></div>
+                <div class="opts-item muted" onclick="closeDropdowns()"><div class="opts-item-label">Snooze until tomorrow</div><div class="opts-item-sub">Re-surfaces at 9am if still unresolved</div></div>
+              </div>
+              <a class="ai-detail-link" onclick="navigate('manager-detail','dashboard','two-sigma')">Full detail →</a>
+            </div>
+          </div>
+
+          <!-- Card 2: PIMCO -->
+          <div class="aah sev-watch">
+            <div class="aah-head">
+              <div class="aah-dot" style="background:var(--amber)"></div>
+              <span class="aah-title">PIMCO</span>
+              <span class="badge badge-warning">Watch</span>
+            </div>
+            <div class="aah-facts">
+              <div class="aah-fact">
+                <span class="aah-fact-label">Recent alpha</span>
+                <div class="aah-fact-right">
+                  <span class="aah-fact-val" style="color:var(--red)">−0.4%</span>
+                  <span class="aah-fact-ctx">6 consecutive weeks negative</span>
+                </div>
+              </div>
+              <div class="aah-fact">
+                <span class="aah-fact-label">Duration</span>
+                <div class="aah-fact-right">
+                  <span class="aah-fact-val" style="color:var(--amber)">6.8yr</span>
+                  <span class="aah-fact-ctx">vs 6.0yr max · FOMC bet went wrong</span>
+                </div>
+              </div>
+              <div class="aah-fact">
+                <span class="aah-fact-label">3yr alpha</span>
+                <div class="aah-fact-right">
+                  <span class="aah-fact-val" style="color:var(--green)">+1.1%</span>
+                  <span class="aah-fact-ctx">cyclical error, not structural</span>
+                </div>
+              </div>
+            </div>
+            <div class="aah-rec">
+              <svg class="aah-spark" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 0.5L7.4 4.4H11.5L8.3 6.8L9.5 11L6 8.6L2.5 11L3.7 6.8L0.5 4.4H4.6L6 0.5Z" fill="#7C3AED"/></svg>
+              Don't escalate yet — 3yr track record is strong and this looks like a Q1 duration positioning error, not a strategy failure. A rationale call gives them the chance to self-correct without damaging the relationship.
+            </div>
+            <div class="aah-actions">
+              <button class="ai-primary-btn" id="btn-pimco-primary" onclick="takeAction('pimco-primary','Request sent')">Request Q2 positioning rationale</button>
+              <button class="ai-more-btn" onclick="toggleOptions('pimco', event)">More <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <div class="opts-dropdown" id="opts-pimco">
+                <div class="opts-item danger" onclick="takeAction('pimco-primary','Escalated');closeDropdowns()"><div class="opts-item-label">Escalate to breach status</div><div class="opts-item-sub">Triggers IC notification — consider if alpha worsens further</div></div>
+                <div class="opts-item" onclick="takeAction('pimco-primary','Call scheduled');closeDropdowns()"><div class="opts-item-label">Schedule early quarterly review</div><div class="opts-item-sub">Formal review ahead of schedule given watch status</div></div>
+                <div class="opts-item" onclick="takeAction('pimco-primary','Removed from watch');closeDropdowns()"><div class="opts-item-label">Remove from watch list</div><div class="opts-item-sub">Use if you already have context explaining the underperformance</div></div>
+                <div class="opts-sep"></div>
+                <div class="opts-item muted" onclick="closeDropdowns()"><div class="opts-item-label">Monitor 2 more weeks</div><div class="opts-item-sub">Re-evaluate if alpha remains negative through May 27</div></div>
+              </div>
+              <a class="ai-detail-link" onclick="navigate('manager-detail','dashboard','pimco')">Full detail →</a>
+            </div>
+          </div>
+
+          <!-- Card 3: Portfolio VaR -->
+          <div class="aah sev-monitor">
+            <div class="aah-head">
+              <div class="aah-dot" style="background:var(--blue)"></div>
+              <span class="aah-title">Portfolio VaR</span>
+              <span class="badge badge-info">Monitor</span>
+            </div>
+            <div class="aah-facts">
+              <div class="aah-fact">
+                <span class="aah-fact-label">Current VaR</span>
+                <div class="aah-fact-right">
+                  <span class="aah-fact-val" style="color:var(--amber)">−$18.2M</span>
+                  <span class="aah-fact-ctx">91% of $20M limit</span>
+                </div>
+              </div>
+              <div class="aah-fact">
+                <span class="aah-fact-label">Weekly move</span>
+                <div class="aah-fact-right">
+                  <span class="aah-fact-val" style="color:var(--red)">+$2.1M</span>
+                  <span class="aah-fact-ctx">driven by tech concentration</span>
+                </div>
+              </div>
+              <div class="aah-fact">
+                <span class="aah-fact-label">Driver</span>
+                <div class="aah-fact-right">
+                  <span class="aah-fact-val">Two Sigma + BlackRock</span>
+                  <span class="aah-fact-ctx">correlated tech exposure</span>
+                </div>
+              </div>
+            </div>
+            <div class="aah-rec">
+              <svg class="aah-spark" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 0.5L7.4 4.4H11.5L8.3 6.8L9.5 11L6 8.6L2.5 11L3.7 6.8L0.5 4.4H4.6L6 0.5Z" fill="#7C3AED"/></svg>
+              Hold — this is correlated tech exposure, not a broad risk-on shift. Two Sigma's remediation should bring VaR below 85% passively. Independent action now risks being redundant and pressuring BlackRock unnecessarily.
+            </div>
+            <div class="aah-actions">
+              <button class="ai-primary-btn" id="btn-var-primary" onclick="takeAction('var-primary','Alert set')">Set alert at 95% utilization</button>
+              <button class="ai-more-btn" onclick="toggleOptions('var', event)">More <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <div class="opts-dropdown" id="opts-var">
+                <div class="opts-item" onclick="takeAction('var-primary','Committee alerted');closeDropdowns()"><div class="opts-item-label">Alert risk committee now</div><div class="opts-item-sub">Sends VaR trend report to risk committee members</div></div>
+                <div class="opts-item" onclick="takeAction('var-primary','Directive sent');closeDropdowns()"><div class="opts-item-label">Request tech exposure reduction</div><div class="opts-item-sub">Contacts BlackRock and Two Sigma to reduce correlated positions</div></div>
+                <div class="opts-item" onclick="takeAction('var-primary','Report requested');closeDropdowns()"><div class="opts-item-label">Request full VaR attribution report</div><div class="opts-item-sub">Detailed breakdown of what's driving the increase</div></div>
+                <div class="opts-sep"></div>
+                <div class="opts-item muted" onclick="closeDropdowns()"><div class="opts-item-label">Dismiss — I'll handle manually</div></div>
+              </div>
+              <a class="ai-detail-link" onclick="navigate('manager-detail','dashboard','two-sigma')">View detail →</a>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="section-label">Portfolio at a glance</div>
+        <div class="grid-5">
+          <div class="card kpi-card"><div class="kpi-label">Total AUM</div><div class="kpi-val">$2.45B</div><div class="kpi-sub" style="color:var(--green)">↑ +1.23% today</div></div>
+          <div class="card kpi-card"><div class="kpi-label">YTD Return</div><div class="kpi-val" style="color:var(--green)">+8.4%</div><div class="kpi-sub">vs benchmark +6.2%</div></div>
+          <div class="card kpi-card"><div class="kpi-label">Sharpe Ratio</div><div class="kpi-val">1.34</div><div class="kpi-sub">Peer median 1.1</div></div>
+          <div class="card kpi-card"><div class="kpi-label">VaR (95%)</div><div class="kpi-val" style="color:var(--red)">-$18.2M</div><div class="kpi-sub" style="color:var(--amber)">↑ Approaching limit</div></div>
+          <div class="card kpi-card"><div class="kpi-label">Breaches</div><div class="kpi-val" style="color:var(--red)">1</div><div class="kpi-sub">2 on watch</div></div>
+        </div>
+
+        <div class="section-label">Portfolio composition</div>
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title-text">Asset allocation</span>
+            </div>
+            <div class="card-body">
+              <div class="alloc-bar">
+                <div class="alloc-seg" style="width:35%;background:#7101DA;border-radius:5px 0 0 5px"></div>
+                <div class="alloc-seg" style="width:25%;background:#4FC3F7"></div>
+                <div class="alloc-seg" style="width:18%;background:#1D9E75"></div>
+                <div class="alloc-seg" style="width:10%;background:#EF9F27"></div>
+                <div class="alloc-seg" style="width:7%;background:#D85A30"></div>
+                <div class="alloc-seg" style="width:5%;background:#AAA;border-radius:0 5px 5px 0"></div>
+              </div>
+              <div class="legend-grid">
+                <div class="legend-item"><div class="legend-dot" style="background:#7101DA"></div>US Equities 35%</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#4FC3F7"></div>Fixed Income 25%</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#1D9E75"></div>Intl Equities 18%</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#EF9F27"></div>Real Assets 10%</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#D85A30"></div>Private Equity 7%</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#AAA"></div>Digital Assets 5%</div>
+              </div>
+              <div class="divider"></div>
+              <div class="sub-label">Sector exposure <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-tertiary)">vs benchmark</span></div>
+              <div class="sector-row"><span class="sector-name">Technology</span><div class="bar-track"><div class="bar-fill" style="width:96%;background:#4FC3F7"></div></div><span class="sector-pct">24%</span><span class="sector-delta" style="color:var(--green)">+1.2%</span></div>
+              <div class="sector-row"><span class="sector-name">Healthcare</span><div class="bar-track"><div class="bar-fill" style="width:67%;background:#4FC3F7"></div></div><span class="sector-pct">16%</span><span class="sector-delta" style="color:var(--red)">-0.4%</span></div>
+              <div class="sector-row"><span class="sector-name">Financials</span><div class="bar-track"><div class="bar-fill" style="width:58%;background:#4FC3F7"></div></div><span class="sector-pct">14%</span><span class="sector-delta" style="color:var(--green)">+0.8%</span></div>
+              <div class="sector-row"><span class="sector-name">Energy</span><div class="bar-track"><div class="bar-fill" style="width:46%;background:#4FC3F7"></div></div><span class="sector-pct">11%</span><span class="sector-delta" style="color:var(--green)">+2.1%</span></div>
+              <a class="more-link">See all sectors →</a>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title-text">Risk metrics</span>
+              <span class="badge badge-warning">VaR elevated</span>
+            </div>
+            <div class="card-body">
+              <div class="risk-grid">
+                <div class="risk-cell"><div class="risk-cell-label">Max drawdown</div><div class="risk-cell-val" style="color:var(--red)">-6.8%</div></div>
+                <div class="risk-cell"><div class="risk-cell-label">Beta</div><div class="risk-cell-val">0.92</div></div>
+                <div class="risk-cell"><div class="risk-cell-label">Tracking error</div><div class="risk-cell-val">2.1%</div></div>
+                <div class="risk-cell"><div class="risk-cell-label">Active share</div><div class="risk-cell-val">38%</div></div>
+              </div>
+              <div class="divider"></div>
+              <div class="sub-label">Concentration</div>
+              <div class="conc-row"><span class="conc-label">Top 10 holdings</span><span class="conc-val">32%</span></div>
+              <div class="conc-row"><span class="conc-label">Largest position</span><span class="conc-val">5.8%</span></div>
+              <div class="conc-row"><span class="conc-label">Guideline breaches</span><span class="conc-val" style="color:var(--red)">1 active</span></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="tab-strip">
+              <div class="tab active" id="tab-geo" onclick="switchTab('geo')">Geographic</div>
+              <div class="tab" id="tab-ccy" onclick="switchTab('ccy')">Currency</div>
+            </div>
+            <div class="card-body">
+              <div id="panel-geo">
+                <div class="geo-row"><span class="geo-label">North America</span><div class="geo-bar-track"><div class="bar-fill" style="width:100%;background:#4FC3F7"></div></div><span class="geo-pct">52%</span></div>
+                <div class="geo-row"><span class="geo-label">Europe</span><div class="geo-bar-track"><div class="bar-fill" style="width:42%;background:#4FC3F7"></div></div><span class="geo-pct">22%</span></div>
+                <div class="geo-row"><span class="geo-label">Asia Pacific</span><div class="geo-bar-track"><div class="bar-fill" style="width:31%;background:#4FC3F7"></div></div><span class="geo-pct">16%</span></div>
+                <div class="geo-row"><span class="geo-label">Emerging mkts</span><div class="geo-bar-track"><div class="bar-fill" style="width:13%;background:#4FC3F7"></div></div><span class="geo-pct">7%</span></div>
+                <div class="geo-row"><span class="geo-label">Other</span><div class="geo-bar-track"><div class="bar-fill" style="width:6%;background:#ccc"></div></div><span class="geo-pct">3%</span></div>
+              </div>
+              <div id="panel-ccy" style="display:none">
+                <div class="geo-row"><span class="geo-label">USD</span><div class="geo-bar-track"><div class="bar-fill" style="width:100%;background:#4FC3F7"></div></div><span class="geo-pct">58%</span></div>
+                <div class="geo-row"><span class="geo-label">EUR</span><div class="geo-bar-track"><div class="bar-fill" style="width:31%;background:#4FC3F7"></div></div><span class="geo-pct">18%</span></div>
+                <div class="geo-row"><span class="geo-label">GBP</span><div class="geo-bar-track"><div class="bar-fill" style="width:16%;background:#4FC3F7"></div></div><span class="geo-pct">9%</span></div>
+                <div class="geo-row"><span class="geo-label">JPY</span><div class="geo-bar-track"><div class="bar-fill" style="width:14%;background:#4FC3F7"></div></div><span class="geo-pct">8%</span></div>
+                <div class="geo-row"><span class="geo-label">Other</span><div class="geo-bar-track"><div class="bar-fill" style="width:12%;background:#ccc"></div></div><span class="geo-pct">7%</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-label">Manager performance & compliance</div>
+        <div class="card" style="margin-bottom:0">
+          <div class="card-header">
+            <span class="card-title-text">All managers</span>
+            <div class="card-header-right">
+              <span class="badge badge-danger">1 Breach</span>
+              <span class="badge badge-warning">1 Watch</span>
+              <button class="expand-btn" onclick="navigate('managers-full','dashboard')" title="Expand">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8 1.5H11.5V5M11.5 1.5L7 6M5 11.5H1.5V8M1.5 11.5L6 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <table class="mgr-table">
+              <thead><tr><th style="min-width:140px">Manager</th><th class="r">YTD</th><th class="r">Benchmark</th><th class="r">Alpha</th><th style="min-width:130px">Score</th><th class="r">Flags</th><th class="r">Status</th></tr></thead>
+              <tbody>
+                <tr onclick="navigate('manager-detail','dashboard','wellington')"><td class="mgr-name">Wellington</td><td class="r" style="color:var(--green)">+8.4%</td><td class="r" style="color:var(--text-tertiary)">7.1%</td><td class="r" style="color:var(--green)">+1.3%</td><td><div class="score-wrap"><div class="score-track"><div class="score-fill" style="width:98%;background:var(--green)"></div></div><span class="score-num">98</span></div></td><td class="r" style="color:var(--text-tertiary)">—</td><td class="r"><span class="badge badge-success">Compliant</span></td></tr>
+                <tr onclick="navigate('manager-detail','dashboard','bridgewater')"><td class="mgr-name">Bridgewater</td><td class="r" style="color:var(--green)">+5.2%</td><td class="r" style="color:var(--text-tertiary)">4.8%</td><td class="r" style="color:var(--green)">+0.4%</td><td><div class="score-wrap"><div class="score-track"><div class="score-fill" style="width:95%;background:var(--green)"></div></div><span class="score-num">95</span></div></td><td class="r" style="color:var(--text-tertiary)">—</td><td class="r"><span class="badge badge-success">Compliant</span></td></tr>
+                <tr onclick="navigate('manager-detail','dashboard','pimco')"><td class="mgr-name">PIMCO</td><td class="r" style="color:var(--green)">+3.1%</td><td class="r" style="color:var(--text-tertiary)">3.5%</td><td class="r" style="color:var(--red)">-0.4%</td><td><div class="score-wrap"><div class="score-track"><div class="score-fill" style="width:82%;background:#EF9F27"></div></div><span class="score-num">82</span></div></td><td class="r" style="color:var(--amber)">2</td><td class="r"><span class="badge badge-warning">Watch</span></td></tr>
+                <tr onclick="navigate('manager-detail','dashboard','blackrock')"><td class="mgr-name">BlackRock</td><td class="r" style="color:var(--green)">+9.7%</td><td class="r" style="color:var(--text-tertiary)">8.9%</td><td class="r" style="color:var(--green)">+0.8%</td><td><div class="score-wrap"><div class="score-track"><div class="score-fill" style="width:97%;background:var(--green)"></div></div><span class="score-num">97</span></div></td><td class="r" style="color:var(--text-tertiary)">—</td><td class="r"><span class="badge badge-success">Compliant</span></td></tr>
+                <tr class="breach" onclick="navigate('manager-detail','dashboard','two-sigma')"><td class="mgr-name">Two Sigma</td><td class="r" style="color:var(--green)">+6.8%</td><td class="r" style="color:var(--text-tertiary)">7.1%</td><td class="r" style="color:var(--red)">-0.3%</td><td><div class="score-wrap"><div class="score-track"><div class="score-fill" style="width:68%;background:var(--red)"></div></div><span class="score-num">68</span></div></td><td class="r" style="color:var(--red);font-weight:600">3</td><td class="r"><span class="badge badge-danger">Breach</span></td></tr>
+              </tbody>
+            </table>
+            <a class="more-link" onclick="navigate('managers-full','dashboard')">View all managers →</a>
+          </div>
+        </div>
+
+        <div class="section-label">Investment reports</div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title-text">Recent reports</span>
+            <button class="expand-btn" onclick="navigate('reports-full','dashboard')" title="Expand">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8 1.5H11.5V5M11.5 1.5L7 6M5 11.5H1.5V8M1.5 11.5L6 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="report-row" onclick="navigate('report-detail','dashboard','q1-perf')"><div class="report-dot" style="background:var(--green)"></div><div><div class="report-name">Q1 Performance Attribution</div><div class="report-sub">Performance · Apr 30, 2025</div></div><span class="chevron" style="margin-left:auto"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            <div class="report-row" onclick="navigate('report-detail','dashboard','alpha-comp')"><div class="report-dot" style="background:var(--green)"></div><div><div class="report-name">Manager Alpha Comparison</div><div class="report-sub">Analytics · May 6, 2025</div></div><span class="chevron" style="margin-left:auto"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            <div class="report-row" onclick="navigate('report-detail','dashboard','risk-decomp')"><div class="report-dot" style="background:var(--green)"></div><div><div class="report-name">Risk Factor Decomposition</div><div class="report-sub">Risk · May 5, 2025</div></div><span class="chevron" style="margin-left:auto"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            <div class="report-row" onclick="navigate('report-detail','dashboard','esg')"><div class="report-dot" style="background:var(--amber)"></div><div><div class="report-name">ESG Compliance Scorecard</div><div class="report-sub">Compliance · May 4, 2025</div></div><span class="chevron" style="margin-left:auto"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            <div class="report-row" onclick="navigate('report-detail','dashboard','liquidity')"><div class="report-dot" style="background:var(--green)"></div><div><div class="report-name">Liquidity Stress Test</div><div class="report-sub">Risk · May 3, 2025</div></div><span class="chevron" style="margin-left:auto"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            <a class="more-link" onclick="navigate('reports-full','dashboard')">View all reports →</a>
+          </div>
+        </div>
+
+      </div><!-- /dashboard -->
+
+
+      <!-- ═══════════════════════════════════════
+           VIEW: Managers fullscreen
+      ═══════════════════════════════════════ -->
+      <div class="view" id="view-managers-full">
+
+        <button class="back-btn" onclick="goBack()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8L10 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="back-managers-label">Dashboard</span>
+        </button>
+
+        <div class="page-header">
+          <div>
+            <h1>Manager performance & compliance</h1>
+            <p>8 managers · 1 breach · 1 on watch · Last updated May 13, 2025</p>
+          </div>
+          <button class="btn-primary">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 10L11 1M11 1H6M11 1V6" stroke="white" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Export
+          </button>
+        </div>
+
+        <div class="toolbar">
+          <div class="search-field">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" style="color:var(--text-tertiary);flex-shrink:0"><circle cx="6.5" cy="6.5" r="4" stroke="currentColor" stroke-width="1.4"/><path d="M11 11L9.5 9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <input type="text" placeholder="Search managers..." oninput="filterManagers(this.value)" id="mgr-search">
+          </div>
+          <div class="toolbar-sep"></div>
+          <div class="filter-pills">
+            <button class="filter-pill active" onclick="setMgrFilter('all',this)">All 8</button>
+            <button class="filter-pill f-success" onclick="setMgrFilter('compliant',this)">Compliant 6</button>
+            <button class="filter-pill f-warning" onclick="setMgrFilter('watch',this)">Watch 1</button>
+            <button class="filter-pill f-danger" onclick="setMgrFilter('breach',this)">Breach 1</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body" style="padding:0 22px">
+            <table class="mgr-table" id="mgr-full-table">
+              <thead>
+                <tr>
+                  <th style="padding-top:18px;min-width:150px">Manager</th>
+                  <th style="padding-top:18px" class="r">AUM</th>
+                  <th style="padding-top:18px">Mandate</th>
+                  <th style="padding-top:18px" class="r">YTD</th>
+                  <th style="padding-top:18px" class="r">Benchmark</th>
+                  <th style="padding-top:18px" class="r">Alpha</th>
+                  <th style="padding-top:18px;min-width:130px">Score</th>
+                  <th style="padding-top:18px" class="r">Last review</th>
+                  <th style="padding-top:18px" class="r">Flags</th>
+                  <th style="padding-top:18px" class="r">Status</th>
+                </tr>
+              </thead>
+              <tbody id="mgr-full-body">
+                <tr data-status="compliant" data-name="wellington" onclick="navigate('manager-detail','managers-full','wellington')"><td class="mgr-name">Wellington</td><td class="r" style="color:var(--text-secondary)">$680M</td><td style="color:var(--text-secondary);font-size:12.5px">Multi-asset</td><td class="r" style="color:var(--green)">+8.4%</td><td class="r" style="color:var(--text-tertiary)">7.1%</td><td class="r" style="color:var(--green)">+1.3%</td><td><div class="score-wrap"><div class="score-track"><div class="score-fill" style="width:98%;background:var(--green)"></div></div><span class="score-num">98</span></div></td><td class="r" style="color:var(--text-tertiary)">Mar 28</td><td class="r" style="color:var(--text-tertiary)">—</td><td class="r"><span class="badge badge-success">Compliant</span></td></tr>
+                <tr data-status="compliant" data-name="bridgewater" onclick="navigate('manager-detail','managers-full','bridgewater')"><td class="mgr-name">Bridgewater</td><td class="r" style="color:var(--text-secondary)">$520M</td><td style="color:var(--text-secondary);font-size:12.5px">Global macro</td><td class="r" style="color:var(--green)">+5.2%</td><td class="r" style="color:var(--text-tertiary)">4.8%</td><td class="r" style="color:var(--green)">+0.4%</td><td><div class="score-wrap"><div class="score-track"><div class="score-fill" style="width:95%;background:var(--green)"></div></div><span class="score-num">95</span></div></td><td class="r" style="color:var(--text-tertiary)">Apr 14</td><td class="r" style="color:var(--text-tertiary)">—</td><td class="r"><span class="badge badge-success">Compliant</span></td></tr>
+                <tr data-status="watch" data-name="pimco" onclick="navigate('manager-detail','managers-full','pimco')"><td class="mgr-name">PIMCO</td><td class="r" style="color:var(--text-secondary)">$390M</td><td style="color:var(--text-secondary);font-size:12.5px">Fixed income</td><td class="r" style="color:var(--green)">+3.1%</td><td class="r" style="color:var(--text-tertiary)">3.5%</td><td class="r" style="color:var(--red)">-0.4%</td><td><div class="score-wrap"><div class="score-track"><div class="score-fill" style="width:82%;background:#EF9F27"></div></div><span class="score-num">82</span></div></td><td class="r" style="color:var(--text-tertiary)">Apr 30</td><td class="r" style="color:var(--amber)">2</td><td class="r"><span class="badge badge-warning">Watch</span></td></tr>
+                <tr data-status="compliant" data-name="blackrock" onclick="navigate('manager-detail','managers-full','blackrock')"><td class="mgr-name">BlackRock</td><td class="r" style="color:var(--text-secondary)">$340M</td><td style="color:var(--text-secondary);font-size:12.5px">US equities</td><td class="r" style="color:var(--green)">+9.7%</td><td class="r" style="color:var(--text-tertiary)">8.9%</td><td class="r" style="color:var(--green)">+0.8%</td><td><div class="score-wrap"><div class="score-track"><div class="score-fill" style="width:97%;background:var(--green)"></div></div><span class="score-num">97</span></div></td><td class="r" style="color:var(--text-tertiary)">May 2</td><td class="r" style="color:var(--text-tertiary)">—</td><td class="r"><span class="badge badge-success">Compliant</span></td></tr>
+                <tr data-status="compliant" data-name="kkr" onclick="navigate('manager-detail','managers-full','kkr')"><td class="mgr-name">KKR</td><td class="r" style="color:var(--text-secondary)">$210M</td><td style="color:var(--text-secondary);font-size:12.5px">Private equity</td><td class="r" style="color:var(--green)">+12.3%</td><td class="r" style="color:var(--text-tertiary)">10%</td><td class="r" style="color:var(--green)">+2.3%</td><td><div class="score-wrap"><div class="score-track"><div class="score-fill" style="width:91%;background:var(--green)"></div></div><span class="score-num">91</span></div></td><td class="r" style="color:var(--text-tertiary)">Apr 22</td><td class="r" style="color:var(--amber)">1</td><td class="r"><span class="badge badge-success">Compliant</span></td></tr>
+                <tr data-status="compliant" data-name="citadel" onclick="navigate('manager-detail','managers-full','citadel')"><td class="mgr-name">Citadel</td><td class="r" style="color:var(--text-secondary)">$180M</td><td style="color:var(--text-secondary);font-size:12.5px">Hedge / quant</td><td class="r" style="color:var(--green)">+14.1%</td><td class="r" style="color:var(--text-tertiary)">8.9%</td><td class="r" style="color:var(--green)">+5.2%</td><td><div class="score-wrap"><div class="score-track"><div class="score-fill" style="width:94%;background:var(--green)"></div></div><span class="score-num">94</span></div></td><td class="r" style="color:var(--text-tertiary)">May 8</td><td class="r" style="color:var(--text-tertiary)">—</td><td class="r"><span class="badge badge-success">Compliant</span></td></tr>
+                <tr data-status="breach" data-name="two sigma" class="breach" onclick="navigate('manager-detail','managers-full','two-sigma')"><td class="mgr-name">Two Sigma</td><td class="r" style="color:var(--text-secondary)">$170M</td><td style="color:var(--text-secondary);font-size:12.5px">Quant / systematic</td><td class="r" style="color:var(--green)">+6.8%</td><td class="r" style="color:var(--text-tertiary)">7.1%</td><td class="r" style="color:var(--red)">-0.3%</td><td><div class="score-wrap"><div class="score-track"><div class="score-fill" style="width:68%;background:var(--red)"></div></div><span class="score-num">68</span></div></td><td class="r" style="color:var(--red)">Overdue</td><td class="r" style="color:var(--red);font-weight:600">3</td><td class="r"><span class="badge badge-danger">Breach</span></td></tr>
+                <tr data-status="compliant" data-name="apollo" onclick="navigate('manager-detail','managers-full','apollo')"><td class="mgr-name">Apollo Global</td><td class="r" style="color:var(--text-secondary)">$155M</td><td style="color:var(--text-secondary);font-size:12.5px">Private credit</td><td class="r" style="color:var(--green)">+11.5%</td><td class="r" style="color:var(--text-tertiary)">10%</td><td class="r" style="color:var(--green)">+1.5%</td><td><div class="score-wrap"><div class="score-track"><div class="score-fill" style="width:96%;background:var(--green)"></div></div><span class="score-num">96</span></div></td><td class="r" style="color:var(--text-tertiary)">May 1</td><td class="r" style="color:var(--text-tertiary)">—</td><td class="r"><span class="badge badge-success">Compliant</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div><!-- /managers-full -->
+
+
+      <!-- ═══════════════════════════════════════
+           VIEW: Manager detail
+      ═══════════════════════════════════════ -->
+      <div class="view" id="view-manager-detail">
+
+        <button class="back-btn" onclick="goBack()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8L10 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="back-detail-label">All managers</span>
+        </button>
+
+        <div id="manager-detail-content">
+          <!-- rendered by JS -->
+        </div>
+
+      </div><!-- /manager-detail -->
+
+
+      <!-- ═══════════════════════════════════════
+           VIEW: Reports fullscreen
+      ═══════════════════════════════════════ -->
+      <div class="view" id="view-reports-full">
+
+        <button class="back-btn" onclick="goBack()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8L10 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Dashboard</span>
+        </button>
+
+        <div class="page-header">
+          <div>
+            <h1>Investment reports</h1>
+            <p>12 reports · Filtered by: All types</p>
+          </div>
+          <button class="btn-primary">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1.5V11.5M1.5 6.5H11.5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+            Generate report
+          </button>
+        </div>
+
+        <div class="toolbar">
+          <div class="search-field">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" style="color:var(--text-tertiary);flex-shrink:0"><circle cx="6.5" cy="6.5" r="4" stroke="currentColor" stroke-width="1.4"/><path d="M11 11L9.5 9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <input type="text" placeholder="Search reports..." oninput="filterReports(this.value)">
+          </div>
+          <div class="toolbar-sep"></div>
+          <div class="filter-pills">
+            <button class="filter-pill active" onclick="setReportFilter('all',this)">All</button>
+            <button class="filter-pill" onclick="setReportFilter('performance',this)">Performance</button>
+            <button class="filter-pill" onclick="setReportFilter('risk',this)">Risk</button>
+            <button class="filter-pill" onclick="setReportFilter('analytics',this)">Analytics</button>
+            <button class="filter-pill f-warning" onclick="setReportFilter('compliance',this)">Compliance</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body" id="reports-full-list">
+            <div class="report-row" data-type="performance" data-name="q1 performance attribution" onclick="navigate('report-detail','reports-full','q1-perf')"><div class="report-dot" style="background:var(--green)"></div><div style="flex:1"><div class="report-name">Q1 Performance Attribution</div><div class="report-sub">Performance · Apr 30, 2025</div></div><span class="badge badge-info" style="flex-shrink:0">Performance</span><span class="chevron" style="margin-left:8px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            <div class="report-row" data-type="analytics" data-name="manager alpha comparison" onclick="navigate('report-detail','reports-full','alpha-comp')"><div class="report-dot" style="background:var(--green)"></div><div style="flex:1"><div class="report-name">Manager Alpha Comparison</div><div class="report-sub">Analytics · May 6, 2025</div></div><span class="badge badge-info" style="flex-shrink:0">Analytics</span><span class="chevron" style="margin-left:8px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            <div class="report-row" data-type="risk" data-name="risk factor decomposition" onclick="navigate('report-detail','reports-full','risk-decomp')"><div class="report-dot" style="background:var(--green)"></div><div style="flex:1"><div class="report-name">Risk Factor Decomposition</div><div class="report-sub">Risk · May 5, 2025</div></div><span class="badge badge-info" style="flex-shrink:0">Risk</span><span class="chevron" style="margin-left:8px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            <div class="report-row" data-type="compliance" data-name="esg compliance scorecard" onclick="navigate('report-detail','reports-full','esg')"><div class="report-dot" style="background:var(--amber)"></div><div style="flex:1"><div class="report-name">ESG Compliance Scorecard</div><div class="report-sub">Compliance · May 4, 2025 · Action needed</div></div><span class="badge badge-warning" style="flex-shrink:0">Compliance</span><span class="chevron" style="margin-left:8px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            <div class="report-row" data-type="risk" data-name="liquidity stress test" onclick="navigate('report-detail','reports-full','liquidity')"><div class="report-dot" style="background:var(--green)"></div><div style="flex:1"><div class="report-name">Liquidity Stress Test</div><div class="report-sub">Risk · May 3, 2025</div></div><span class="badge badge-info" style="flex-shrink:0">Risk</span><span class="chevron" style="margin-left:8px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            <div class="report-row" data-type="performance" data-name="benchmark deviation analysis" onclick="navigate('report-detail','reports-full','benchmark')"><div class="report-dot" style="background:var(--green)"></div><div style="flex:1"><div class="report-name">Benchmark Deviation Analysis</div><div class="report-sub">Performance · May 1, 2025</div></div><span class="badge badge-info" style="flex-shrink:0">Performance</span><span class="chevron" style="margin-left:8px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            <div class="report-row" data-type="analytics" data-name="factor exposure report" onclick="navigate('report-detail','reports-full','factor')"><div class="report-dot" style="background:var(--green)"></div><div style="flex:1"><div class="report-name">Factor Exposure Report</div><div class="report-sub">Analytics · Apr 28, 2025</div></div><span class="badge badge-info" style="flex-shrink:0">Analytics</span><span class="chevron" style="margin-left:8px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            <div class="report-row" data-type="compliance" data-name="guideline breach report" onclick="navigate('report-detail','reports-full','breach-rpt')"><div class="report-dot" style="background:var(--red)"></div><div style="flex:1"><div class="report-name">Guideline Breach Report — Two Sigma</div><div class="report-sub">Compliance · May 12, 2025 · Urgent</div></div><span class="badge badge-danger" style="flex-shrink:0">Compliance</span><span class="chevron" style="margin-left:8px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            <div class="report-row" data-type="risk" data-name="var limit utilization" onclick="navigate('report-detail','reports-full','var')"><div class="report-dot" style="background:var(--amber)"></div><div style="flex:1"><div class="report-name">VaR Limit Utilization</div><div class="report-sub">Risk · May 11, 2025</div></div><span class="badge badge-info" style="flex-shrink:0">Risk</span><span class="chevron" style="margin-left:8px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            <div class="report-row" data-type="performance" data-name="monthly performance flash" onclick="navigate('report-detail','reports-full','flash')"><div class="report-dot" style="background:var(--green)"></div><div style="flex:1"><div class="report-name">Monthly Performance Flash — April</div><div class="report-sub">Performance · May 7, 2025</div></div><span class="badge badge-info" style="flex-shrink:0">Performance</span><span class="chevron" style="margin-left:8px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            <div class="report-row" data-type="analytics" data-name="peer group comparison" onclick="navigate('report-detail','reports-full','peer')"><div class="report-dot" style="background:var(--green)"></div><div style="flex:1"><div class="report-name">Peer Group Comparison</div><div class="report-sub">Analytics · Apr 25, 2025</div></div><span class="badge badge-info" style="flex-shrink:0">Analytics</span><span class="chevron" style="margin-left:8px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            <div class="report-row" data-type="compliance" data-name="regulatory filing summary" onclick="navigate('report-detail','reports-full','reg')"><div class="report-dot" style="background:var(--green)"></div><div style="flex:1"><div class="report-name">Regulatory Filing Summary — Q1</div><div class="report-sub">Compliance · Apr 20, 2025</div></div><span class="badge badge-info" style="flex-shrink:0">Compliance</span><span class="chevron" style="margin-left:8px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+          </div>
+        </div>
+
+      </div><!-- /reports-full -->
+
+
+      <!-- ═══════════════════════════════════════
+           VIEW: Report detail
+      ═══════════════════════════════════════ -->
+      <div class="view" id="view-report-detail">
+
+        <button class="back-btn" onclick="goBack()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8L10 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="back-report-label">All reports</span>
+        </button>
+
+        <div id="report-detail-content">
+          <!-- rendered by JS -->
+        </div>
+
+      </div><!-- /report-detail -->
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<script>
+
+  // ── State ─────────────────────────────────────────────
+  let currentView = 'dashboard';
+  let fromView    = 'dashboard';
+  let selectedId  = null;
+
+  const CHEVRON = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+  // ── Navigation ─────────────────────────────────────────
+  function navigate(view, from, id) {
+    fromView = from || currentView;
+    currentView = view;
+    selectedId = id || null;
+
+    document.querySelectorAll('.view').forEach(v => {
+      v.classList.remove('active');
+    });
+    const target = document.getElementById('view-' + view);
+    target.classList.add('active');
+    document.querySelector('.content').scrollTop = 0;
+
+    // Update back labels
+    const fromLabel = fromView === 'dashboard' ? 'Dashboard' : fromView === 'managers-full' ? 'All managers' : fromView === 'reports-full' ? 'All reports' : 'Back';
+    const bl = document.getElementById('back-managers-label');
+    if (bl) bl.textContent = fromLabel;
+    const bd = document.getElementById('back-detail-label');
+    if (bd) bd.textContent = fromLabel;
+    const br = document.getElementById('back-report-label');
+    if (br) br.textContent = fromLabel;
+
+    // Render dynamic content
+    if (view === 'manager-detail') renderManagerDetail(id);
+    if (view === 'report-detail')  renderReportDetail(id);
+  }
+
+  function goBack() {
+    navigate(fromView, 'dashboard');
+  }
+
+  // ── Tab switcher (dashboard) ──────────────────────────
+  function switchTab(id) {
+    document.getElementById('panel-geo').style.display = id === 'geo' ? '' : 'none';
+    document.getElementById('panel-ccy').style.display = id === 'ccy' ? '' : 'none';
+    document.getElementById('tab-geo').className = 'tab' + (id === 'geo' ? ' active' : '');
+    document.getElementById('tab-ccy').className = 'tab' + (id === 'ccy' ? ' active' : '');
+  }
+
+  // ── Manager search + filter ────────────────────────────
+  let mgrFilter = 'all';
+  let mgrSearch = '';
+
+  function filterManagers(q) {
+    mgrSearch = q.toLowerCase();
+    applyMgrFilters();
+  }
+  function setMgrFilter(f, btn) {
+    mgrFilter = f;
+    document.querySelectorAll('#view-managers-full .filter-pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    applyMgrFilters();
+  }
+  function applyMgrFilters() {
+    document.querySelectorAll('#mgr-full-body tr').forEach(row => {
+      const status = row.dataset.status;
+      const name   = row.dataset.name;
+      const matchFilter = mgrFilter === 'all' || status === mgrFilter;
+      const matchSearch = !mgrSearch || name.includes(mgrSearch);
+      row.style.display = (matchFilter && matchSearch) ? '' : 'none';
+    });
+  }
+
+  // ── Reports search + filter ────────────────────────────
+  let reportFilter = 'all';
+
+  function filterReports(q) {
+    const qLow = q.toLowerCase();
+    document.querySelectorAll('#reports-full-list .report-row').forEach(row => {
+      const name = row.dataset.name;
+      const type = row.dataset.type;
+      const matchFilter = reportFilter === 'all' || type === reportFilter;
+      const matchSearch = !qLow || name.includes(qLow);
+      row.style.display = (matchFilter && matchSearch) ? '' : 'none';
+    });
+  }
+  function setReportFilter(f, btn) {
+    reportFilter = f;
+    document.querySelectorAll('#view-reports-full .filter-pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    filterReports(document.querySelector('#view-reports-full input').value);
+  }
+
+  // ── Manager detail renderer ────────────────────────────
+  const managerData = {
+    'two-sigma': {
+      name: 'Two Sigma',
+      status: 'breach',
+      statusLabel: 'Breach',
+      score: 68,
+      scoreColor: 'var(--red)',
+      aum: '$170M',
+      mandate: 'Quant / systematic',
+      ytd: '+6.8%',
+      benchmark: '7.1%',
+      alpha: '-0.3%',
+      alphaColor: 'var(--red)',
+      flags: [
+        {
+          type: 'Position concentration',
+          title: 'NVDA position exceeds single-name limit',
+          current: '7.2%', currentLabel: 'Current weight',
+          limit: '6.0%', limitLabel: 'Guideline limit',
+          excess: '+1.2pp', excessColor: 'var(--red)',
+          detected: 'Detected May 10, 2025 · 3 days unresolved'
+        },
+        {
+          type: 'Sector overweight',
+          title: 'Technology sector exposure above maximum',
+          current: '31.4%', currentLabel: 'Current exposure',
+          limit: '28.0%', limitLabel: 'Guideline limit',
+          excess: '+3.4pp', excessColor: 'var(--red)',
+          detected: 'Detected May 8, 2025 · 5 days unresolved'
+        },
+        {
+          type: 'Liquidity threshold',
+          title: 'Illiquid securities exceed portfolio limit',
+          current: '12.1%', currentLabel: 'In <10 day liquidity',
+          limit: '8.0%', limitLabel: 'Guideline limit',
+          excess: '+4.1pp', excessColor: 'var(--red)',
+          detected: 'Detected May 12, 2025 · 1 day unresolved'
+        }
+      ],
+      timeline: [
+        { title: 'Breach report generated automatically', date: 'May 12, 2025 · 09:14 AM', dot: 'var(--red)' },
+        { title: 'Notification sent to portfolio team and compliance', date: 'May 12, 2025 · 09:15 AM', dot: 'var(--text-tertiary)' },
+        { title: 'Two Sigma acknowledged — remediation in progress', date: 'May 13, 2025 · 08:30 AM', dot: 'var(--amber)' },
+        { title: 'Review meeting scheduled for May 15', date: 'May 13, 2025 · 10:00 AM', dot: 'var(--text-tertiary)' }
+      ]
+    },
+    'pimco': {
+      name: 'PIMCO',
+      status: 'watch',
+      statusLabel: 'Watch',
+      score: 82,
+      scoreColor: 'var(--amber)',
+      aum: '$390M',
+      mandate: 'Fixed income',
+      ytd: '+3.1%',
+      benchmark: '3.5%',
+      alpha: '-0.4%',
+      alphaColor: 'var(--red)',
+      flags: [
+        {
+          type: 'Alpha underperformance',
+          title: 'Rolling 6-month alpha below watch threshold',
+          current: '-0.4%', currentLabel: '6M alpha',
+          limit: '0.0%', limitLabel: 'Watch threshold',
+          excess: '-0.4pp', excessColor: 'var(--amber)',
+          detected: 'Detected May 6, 2025 · 7 days on watch'
+        },
+        {
+          type: 'Duration drift',
+          title: 'Portfolio duration drifting above target band',
+          current: '6.8yr', currentLabel: 'Current duration',
+          limit: '6.0yr', limitLabel: 'Target max',
+          excess: '+0.8yr', excessColor: 'var(--amber)',
+          detected: 'Detected May 9, 2025 · 4 days on watch'
+        }
+      ],
+      timeline: [
+        { title: 'Placed on watch list — alpha underperformance', date: 'May 6, 2025', dot: 'var(--amber)' },
+        { title: 'PIMCO submitted performance commentary', date: 'May 8, 2025', dot: 'var(--text-tertiary)' },
+        { title: 'Duration flag added', date: 'May 9, 2025', dot: 'var(--amber)' }
+      ]
+    },
+    'wellington': {
+      name: 'Wellington',
+      status: 'compliant',
+      statusLabel: 'Compliant',
+      score: 98,
+      scoreColor: 'var(--green)',
+      aum: '$680M',
+      mandate: 'Multi-asset',
+      ytd: '+8.4%',
+      benchmark: '7.1%',
+      alpha: '+1.3%',
+      alphaColor: 'var(--green)',
+      flags: [],
+      timeline: [
+        { title: 'Quarterly review completed — all guidelines met', date: 'Mar 28, 2025', dot: 'var(--green)' },
+        { title: 'Performance attribution report published', date: 'Apr 2, 2025', dot: 'var(--text-tertiary)' }
+      ]
+    }
+  };
+
+  function renderManagerDetail(id) {
+    const mgr = managerData[id] || {
+      name: id.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase()),
+      status: 'compliant', statusLabel: 'Compliant', score: 95, scoreColor: 'var(--green)',
+      aum: '$200M', mandate: '—', ytd: '+8.0%', benchmark: '7.0%', alpha: '+1.0%', alphaColor: 'var(--green)',
+      flags: [], timeline: []
+    };
+
+    const badgeClass = mgr.status === 'breach' ? 'badge-danger' : mgr.status === 'watch' ? 'badge-warning' : 'badge-success';
+
+    const flagsHtml = mgr.flags.length ? mgr.flags.map((f,i) => `
+      <div class="flag-card">
+        <div class="flag-number">${i+1}</div>
+        <div class="flag-body">
+          <div class="flag-type">${f.type}</div>
+          <div class="flag-title">${f.title}</div>
+          <div class="flag-vals">
+            <div class="flag-val-item">
+              <div class="flag-val-label">${f.currentLabel}</div>
+              <div class="flag-val-num" style="color:${f.excessColor}">${f.current}</div>
+            </div>
+            <div class="flag-val-item">
+              <div class="flag-val-label">${f.limitLabel}</div>
+              <div class="flag-val-num">${f.limit}</div>
+            </div>
+            <div class="flag-val-item">
+              <div class="flag-val-label">Excess</div>
+              <div class="flag-val-num" style="color:${f.excessColor}">${f.excess}</div>
+            </div>
+          </div>
+          <div class="flag-detected">${f.detected}</div>
+        </div>
+      </div>
+    `).join('') : `<div style="padding:20px 0;color:var(--text-tertiary);font-size:13.5px">No active flags.</div>`;
+
+    const timelineHtml = mgr.timeline.map(t => `
+      <div class="timeline-item">
+        <div class="timeline-dot" style="background:${t.dot}"></div>
+        <div class="timeline-body">
+          <div class="timeline-title">${t.title}</div>
+          <div class="timeline-date">${t.date}</div>
+        </div>
+      </div>
+    `).join('');
+
+    const actionButtons = mgr.status === 'breach'
+      ? `<button class="btn-outline danger">Escalate to committee</button><button class="btn-outline">Request explanation</button>`
+      : mgr.status === 'watch'
+      ? `<button class="btn-outline">Request commentary</button>`
+      : '';
+
+    document.getElementById('manager-detail-content').innerHTML = `
+      <div class="detail-header">
+        <div>
+          <div class="detail-name">${mgr.name}</div>
+          <div class="detail-meta">
+            <span class="badge ${badgeClass}">${mgr.statusLabel}</span>
+            <span style="font-size:13px;color:var(--text-secondary)">${mgr.mandate}</span>
+            <span style="font-size:13px;color:var(--text-secondary)">·</span>
+            <span style="font-size:13px;color:var(--text-secondary)">${mgr.aum} AUM</span>
+          </div>
+        </div>
+        <div class="detail-actions">${actionButtons}</div>
+      </div>
+
+      <div class="metrics-strip">
+        <div class="metric-cell">
+          <div class="metric-label">Compliance score</div>
+          <div class="metric-val" style="color:${mgr.scoreColor}">${mgr.score}</div>
+          <div class="metric-sub">out of 100</div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-label">YTD return</div>
+          <div class="metric-val" style="color:var(--green)">${mgr.ytd}</div>
+          <div class="metric-sub">vs benchmark ${mgr.benchmark}</div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-label">Alpha</div>
+          <div class="metric-val" style="color:${mgr.alphaColor}">${mgr.alpha}</div>
+          <div class="metric-sub">vs benchmark</div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-label">Active flags</div>
+          <div class="metric-val" style="color:${mgr.flags.length ? 'var(--red)' : 'var(--green)'}">${mgr.flags.length}</div>
+          <div class="metric-sub">${mgr.flags.length ? 'require action' : 'none'}</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="align-items:start">
+        <div>
+          <div class="section-label" style="margin-top:0">${mgr.flags.length ? 'Breach flags' : 'Compliance flags'}</div>
+          ${flagsHtml}
+        </div>
+        <div>
+          <div class="section-label" style="margin-top:0">Activity</div>
+          <div class="card">
+            <div class="card-body">
+              ${timelineHtml || '<div style="color:var(--text-tertiary);font-size:13.5px">No recent activity.</div>'}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── Report detail renderer ─────────────────────────────
+  const reportData = {
+    'q1-perf': {
+      title: 'Q1 Performance Attribution',
+      type: 'Performance',
+      date: 'April 30, 2025',
+      status: 'green',
+      summary: 'The portfolio delivered +8.4% in Q1 2025, outperforming the blended benchmark by +2.2pp. Outperformance was driven primarily by overweight positions in Technology and Energy, and strong alpha generation from Wellington and Citadel. Fixed income allocation was a modest drag given rate headwinds.',
+      rows: [
+        { label: 'US Equities', manager: 'Wellington / BlackRock', contrib: '+3.8%', bench: '+3.1%', active: '+0.7%', color: 'var(--green)' },
+        { label: 'Fixed Income', manager: 'PIMCO', contrib: '+0.6%', bench: '+0.9%', active: '-0.3%', color: 'var(--red)' },
+        { label: 'Intl Equities', manager: 'Bridgewater', contrib: '+1.4%', bench: '+1.2%', active: '+0.2%', color: 'var(--green)' },
+        { label: 'Real Assets', manager: 'Apollo', contrib: '+1.1%', bench: '+0.8%', active: '+0.3%', color: 'var(--green)' },
+        { label: 'Private Equity', manager: 'KKR', contrib: '+0.9%', bench: '+0.7%', active: '+0.2%', color: 'var(--green)' },
+        { label: 'Quant / Hedge', manager: 'Citadel / Two Sigma', contrib: '+0.6%', bench: '+0.5%', active: '+0.1%', color: 'var(--green)' },
+      ]
+    },
+    'esg': {
+      title: 'ESG Compliance Scorecard',
+      type: 'Compliance',
+      date: 'May 4, 2025',
+      status: 'amber',
+      summary: 'Overall ESG compliance score is 74/100, below the internal target of 80. Two managers — Two Sigma and KKR — have not submitted updated ESG disclosures for Q1. Carbon intensity of the equity portfolio has increased 4% quarter-on-quarter, driven by the Energy overweight.',
+      rows: [
+        { label: 'Wellington', manager: 'Multi-asset', contrib: '88/100', bench: '80', active: '+8', color: 'var(--green)' },
+        { label: 'BlackRock', manager: 'US equities', contrib: '85/100', bench: '80', active: '+5', color: 'var(--green)' },
+        { label: 'Bridgewater', manager: 'Global macro', contrib: '81/100', bench: '80', active: '+1', color: 'var(--green)' },
+        { label: 'PIMCO', manager: 'Fixed income', contrib: '79/100', bench: '80', active: '-1', color: 'var(--amber)' },
+        { label: 'Apollo', manager: 'Private credit', contrib: '76/100', bench: '80', active: '-4', color: 'var(--amber)' },
+        { label: 'KKR', manager: 'Private equity', contrib: '61/100', bench: '80', active: '-19', color: 'var(--red)' },
+        { label: 'Two Sigma', manager: 'Quant', contrib: '58/100', bench: '80', active: '-22', color: 'var(--red)' },
+      ]
+    }
+  };
+
+  function renderReportDetail(id) {
+    const rpt = reportData[id] || {
+      title: id.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase()),
+      type: 'Report', date: 'May 2025', status: 'green',
+      summary: 'Report content will appear here.',
+      rows: []
+    };
+
+    const statusColor = rpt.status === 'green' ? 'var(--green)' : rpt.status === 'amber' ? 'var(--amber)' : 'var(--red)';
+    const badgeClass  = rpt.status === 'green' ? 'badge-success' : rpt.status === 'amber' ? 'badge-warning' : 'badge-danger';
+
+    const tableRows = rpt.rows.map(r => `
+      <tr>
+        <td style="font-weight:500">${r.label}</td>
+        <td style="color:var(--text-secondary);font-size:12.5px">${r.manager}</td>
+        <td class="r" style="color:${r.color};font-weight:500">${r.contrib}</td>
+        <td class="r" style="color:var(--text-tertiary)">${r.bench}</td>
+        <td class="r" style="color:${r.color}">${r.active}</td>
+      </tr>
+    `).join('');
+
+    document.getElementById('report-detail-content').innerHTML = `
+      <div class="report-detail-header">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">
+          <div class="report-detail-title">${rpt.title}</div>
+          <div style="display:flex;gap:8px;flex-shrink:0">
+            <button class="btn-outline">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 10L11 1M11 1H6M11 1V6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Export PDF
+            </button>
+          </div>
+        </div>
+        <div class="report-detail-meta">
+          <span class="badge ${badgeClass}" style="flex-shrink:0">${rpt.type}</span>
+          <span class="report-meta-item">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1.5" y="2.5" width="10" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4.5 1.5V3.5M8.5 1.5V3.5M1.5 5.5H11.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            ${rpt.date}
+          </span>
+        </div>
+      </div>
+
+      <div class="section-label" style="margin-top:0">Executive summary</div>
+      <div class="summary-block">${rpt.summary}</div>
+
+      ${rpt.rows.length ? `
+        <div class="section-label">Breakdown</div>
+        <div class="card">
+          <div class="card-body">
+            <table class="attr-table">
+              <thead>
+                <tr>
+                  <th>Asset class</th>
+                  <th>Manager</th>
+                  <th class="r">Contribution</th>
+                  <th class="r">Benchmark</th>
+                  <th class="r">Active</th>
+                </tr>
+              </thead>
+              <tbody>${tableRows}</tbody>
+            </table>
+          </div>
+        </div>
+      ` : ''}
+    `;
+  }
+
+  // ── Alert accordion ───────────────────────────────────
+  function toggleAlert(id) {
+    const exp  = document.getElementById('alert-exp-' + id);
+    const chev = document.getElementById('chev-' + id);
+    const open = exp.classList.contains('open');
+    exp.classList.toggle('open', !open);
+    chev.classList.toggle('open', !open);
+  }
+
+  // ── AI alert actions ──────────────────────────────────
+  function takeAction(btnId, confirmText) {
+    const btn = document.getElementById('btn-' + btnId);
+    if (!btn || btn.disabled) return;
+    const original = btn.innerHTML;
+    btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5L5 9.5L11 3.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> ${confirmText}`;
+    btn.classList.add('done');
+    btn.disabled = true;
+    closeDropdowns();
+    setTimeout(() => {
+      btn.innerHTML = original;
+      btn.classList.remove('done');
+      btn.disabled = false;
+    }, 3200);
+  }
+
+  function toggleOptions(id, event) {
+    event.stopPropagation();
+    const dropdown = document.getElementById('opts-' + id);
+    const isOpen = dropdown.classList.contains('open');
+    closeDropdowns();
+    if (!isOpen) dropdown.classList.add('open');
+  }
+
+  function closeDropdowns() {
+    document.querySelectorAll('.opts-dropdown').forEach(d => d.classList.remove('open'));
+  }
+
+  document.addEventListener('click', closeDropdowns);
+
+  // Keyboard shortcut
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && currentView !== 'dashboard') goBack();
+    if (e.key === 'Escape') closeDropdowns();
+  });
+
+</script>
+</body>
+</html>
