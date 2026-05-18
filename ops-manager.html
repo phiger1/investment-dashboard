@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Operations Manager — Dashboard</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --page-bg: #f4f4f2;
+  --card-bg: #ffffff;
+  --card-border: 0.5px solid #e8e8e5;
+  --sidebar-bg: #1a1a2e;
+  --brand-purple: #7101DA;
+  --red: #c0392b; --red-bg: #fde8e8;
+  --amber: #b7770d; --amber-bg: #fef3e2;
+  --green: #2e7d32; --green-bg: #e8f5e9;
+  --blue: #1a56b0; --blue-bg: #e8f0fe;
+  --text-primary: #1a1a1a;
+  --text-secondary: #555;
+  --text-tertiary: #999;
+  --border-light: #f0f0ee;
+  --radius: 10px;
+  --font: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+}
+
+body { font-family: var(--font); background: var(--page-bg); color: var(--text-primary); font-size: 13px; line-height: 1.4; min-height: 100vh; }
+
+/* Shell */
+.shell { display: flex; min-height: 100vh; }
+
+/* Sidebar */
+.sidebar { width: 200px; flex-shrink: 0; background: var(--sidebar-bg); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+.sidebar-logo { padding: 18px 18px 14px; display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 700; color: white; border-bottom: 0.5px solid rgba(255,255,255,0.08); }
+.logo-arrow { color: #4FC3F7; }
+.sidebar-nav { flex: 1; padding: 10px 0; display: flex; flex-direction: column; gap: 1px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 18px; font-size: 13px; color: rgba(255,255,255,0.45); cursor: pointer; border-left: 2px solid transparent; transition: background 0.1s; }
+.nav-item:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.7); }
+.nav-item.active { color: white; background: rgba(255,255,255,0.08); border-left-color: #4FC3F7; }
+.nav-icon { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.sidebar-footer { padding: 14px 18px; border-top: 0.5px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 8px; }
+.sidebar-footer-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: rgba(255,255,255,0.45); cursor: pointer; }
+.sidebar-footer-item:hover { color: rgba(255,255,255,0.7); }
+.avatar { width: 24px; height: 24px; border-radius: 50%; background: #4FC3F7; color: #1a1a2e; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+/* Main */
+.main { margin-left: 200px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+/* Topbar */
+.topbar { height: 48px; background: white; border-bottom: 0.5px solid #e8e8e5; display: flex; align-items: center; padding: 0 24px; gap: 12px; position: sticky; top: 0; z-index: 50; }
+.topbar-toggle { color: #999; cursor: pointer; display: flex; align-items: center; }
+.persona-switcher { display: flex; gap: 4px; margin-left: 4px; }
+.persona-pill { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; font-family: var(--font); }
+.persona-pill.active { background: #1a1a1a; color: white; border: none; }
+.persona-pill.inactive { background: transparent; color: #999; border: 0.5px solid #e8e8e5; }
+.persona-pill.inactive:hover { background: #f4f4f2; }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 14px; color: #999; }
+.topbar-icon { cursor: pointer; display: flex; align-items: center; }
+.topbar-icon:hover { color: #555; }
+
+/* Content */
+.content { flex: 1; padding: 28px 32px; max-width: 1440px; width: 100%; margin: 0 auto; }
+
+/* Page header */
+.page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+.page-header-left h1 { font-size: 24px; font-weight: 700; color: var(--text-primary); }
+.page-header-left .sub { font-size: 13px; color: var(--text-tertiary); margin-top: 2px; }
+.btn-primary { background: var(--brand-purple); color: white; border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--font); }
+.btn-primary:hover { background: #5e01b5; }
+
+/* AI Bar */
+.ai-bar { background: white; border: 0.5px solid #e8e8e5; border-radius: var(--radius); padding: 12px 16px; display: flex; align-items: center; gap: 10px; margin-bottom: 12px; cursor: text; }
+.ai-bar:hover { border-color: var(--brand-purple); }
+.ai-bar-icon { color: #4FC3F7; font-size: 14px; flex-shrink: 0; }
+.ai-bar-placeholder { font-size: 13px; color: #aaa; }
+
+/* Briefing */
+.briefing-card { background: white; border: var(--card-border); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 12px; }
+.briefing-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 0.5px solid #f0f0ee; }
+.briefing-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--brand-purple); }
+.briefing-date { font-size: 11px; color: var(--text-tertiary); }
+.briefing-body { font-size: 13px; color: #333; line-height: 1.6; }
+.b-urgent { color: var(--red); font-weight: 500; }
+.b-deadline { color: var(--red); font-weight: 500; text-decoration: underline; text-decoration-style: dashed; }
+.b-warn { color: var(--amber); font-weight: 500; }
+.b-info { color: var(--blue); font-weight: 500; }
+
+/* Zone labels */
+.zone-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: #999; margin-top: 24px; margin-bottom: 10px; }
+
+/* Grid */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* Card */
+.card { background: var(--card-bg); border: var(--card-border); border-radius: var(--radius); padding: 16px 18px; }
+
+/* Widget header */
+.widget-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 0.5px solid #f0f0ee; }
+.widget-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #666; }
+.widget-title-right { display: flex; align-items: center; gap: 8px; }
+
+/* Badges */
+.badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; line-height: 1.4; }
+.badge-red { background: var(--red-bg); color: var(--red); }
+.badge-amber { background: var(--amber-bg); color: var(--amber); }
+.badge-green { background: var(--green-bg); color: var(--green); }
+.badge-blue { background: var(--blue-bg); color: var(--blue); }
+
+/* Dots */
+.dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 1px; }
+.dot-red { background: var(--red); }
+.dot-amber { background: var(--amber); }
+.dot-green { background: var(--green); }
+.dot-grey { background: #c0c0bb; }
+
+/* Approval rows */
+.approval-row { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 0.5px solid var(--border-light); cursor: pointer; }
+.approval-row:last-child { border-bottom: none; }
+.approval-row:hover { background: #f8f8f6; margin: 0 -18px; padding: 9px 18px; }
+.approval-body { flex: 1; }
+.approval-type { font-size: 13px; font-weight: 500; }
+.approval-fund { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
+.approval-amount { font-size: 13px; font-weight: 500; white-space: nowrap; }
+.approval-chev { color: #ccc; font-size: 16px; line-height: 1; margin-top: 1px; }
+
+/* Notification rows */
+.notif-row { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 0.5px solid var(--border-light); }
+.notif-row:last-child { border-bottom: none; }
+.notif-row:hover { background: #f8f8f6; margin: 0 -18px; padding: 9px 18px; }
+.notif-pill { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 500; flex-shrink: 0; white-space: nowrap; }
+.pill-error { background: var(--red-bg); color: var(--red); }
+.pill-warning { background: var(--amber-bg); color: var(--amber); }
+.pill-info { background: #f0f0ee; color: #666; }
+.notif-body { flex: 1; }
+.notif-desc { font-size: 13px; color: var(--text-primary); }
+.notif-fund { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
+.notif-time { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; }
+
+/* Recon rows */
+.recon-row { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 0.5px solid var(--border-light); }
+.recon-row:last-child { border-bottom: none; }
+.recon-row:hover { background: #f8f8f6; margin: 0 -18px; padding: 9px 18px; }
+.recon-body { flex: 1; }
+.recon-cat { font-size: 13px; font-weight: 500; }
+.recon-sub { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
+.recon-pct { font-size: 13px; font-weight: 500; min-width: 48px; text-align: right; }
+.recon-status { font-size: 13px; min-width: 64px; text-align: right; }
+.recon-clean { color: var(--green); }
+.recon-break-red { color: var(--red); }
+.recon-break-amber { color: var(--amber); }
+
+/* Exception rows */
+.exc-row { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 0.5px solid var(--border-light); }
+.exc-row:last-child { border-bottom: none; }
+.exc-row:hover { background: #f8f8f6; margin: 0 -18px; padding: 9px 18px; }
+.sev-chip { width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+.sev-h { background: var(--red-bg); color: var(--red); }
+.sev-m { background: var(--amber-bg); color: var(--amber); }
+.sev-l { background: #f0f0ee; color: #666; }
+.exc-body { flex: 1; }
+.exc-desc { font-size: 13px; }
+.exc-age { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; }
+
+/* Tab switcher */
+.tab-switcher { display: flex; border: 0.5px solid #e8e8e5; border-radius: 6px; overflow: hidden; width: fit-content; margin-bottom: 12px; }
+.tab-btn { padding: 5px 12px; font-size: 12px; font-weight: 500; cursor: pointer; border: none; background: transparent; color: #999; font-family: var(--font); }
+.tab-btn.active { background: #1a1a1a; color: white; }
+.tab-btn:hover:not(.active) { background: #f4f4f2; color: #555; }
+
+/* Cash rows */
+.cash-row { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 0.5px solid var(--border-light); font-size: 13px; }
+.cash-row:last-child { border-bottom: none; }
+.cash-row:hover { background: #f8f8f6; margin: 0 -18px; padding: 9px 18px; }
+.cash-name { flex: 1; }
+.cash-ccy { font-size: 11px; color: var(--text-tertiary); min-width: 28px; }
+.cash-amount { font-weight: 500; min-width: 70px; text-align: right; }
+.cash-delta { font-size: 12px; min-width: 52px; text-align: right; }
+.delta-up { color: var(--green); }
+.delta-down { color: var(--red); }
+.delta-flat { color: var(--text-tertiary); }
+
+/* Forecast table */
+.forecast-table { width: 100%; border-collapse: collapse; }
+.forecast-table th { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #999; text-align: left; padding: 6px 0 8px; border-bottom: 0.5px solid #e8e8e5; }
+.forecast-table td { font-size: 13px; padding: 9px 0; border-bottom: 0.5px solid var(--border-light); color: var(--text-primary); }
+.forecast-table tr:last-child td { border-bottom: none; }
+.forecast-table tr:hover td { background: #f8f8f6; }
+.fc-date { color: var(--text-secondary); font-size: 12px; white-space: nowrap; padding-right: 12px; }
+.fc-amount { font-weight: 500; text-align: right; white-space: nowrap; padding-right: 12px; }
+.fc-type { font-size: 11px; color: var(--text-tertiary); }
+.fc-outflow { color: var(--red); }
+.fc-inflow { color: var(--green); }
+.fc-neutral { color: var(--text-secondary); }
+
+/* NAV table */
+.nav-table { width: 100%; border-collapse: collapse; }
+.nav-table th { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #999; text-align: left; padding: 6px 0 8px; border-bottom: 0.5px solid #e8e8e5; }
+.nav-table td { font-size: 13px; padding: 9px 0; border-bottom: 0.5px solid var(--border-light); }
+.nav-table tr:last-child td { border-bottom: none; }
+.nav-table tr:hover td { background: #f8f8f6; }
+.nav-fund { font-weight: 500; }
+.nav-unit { font-weight: 500; text-align: right; padding-right: 12px; white-space: nowrap; }
+.nav-change { text-align: right; padding-right: 12px; font-size: 12px; }
+.nav-up { color: var(--green); }
+.nav-down { color: var(--red); }
+.nav-flat { color: var(--text-tertiary); }
+.nav-status { font-size: 12px; font-weight: 500; }
+.nav-final { color: var(--green); }
+.nav-prelim { color: var(--amber); }
+.nav-docs { color: var(--blue); font-size: 13px; cursor: pointer; text-align: right; }
+.nav-docs-none { color: #ccc; text-align: right; }
+.widget-sub { font-size: 11px; }
+
+/* Reports */
+.report-group-label { font-size: 11px; color: #999; font-weight: 500; margin: 12px 0 4px; }
+.report-group-label:first-child { margin-top: 0; }
+.report-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 0.5px solid var(--border-light); }
+.report-row:last-child { border-bottom: none; }
+.report-row:hover { background: #f8f8f6; margin: 0 -18px; padding: 9px 18px; }
+.report-body { flex: 1; }
+.report-name { font-size: 13px; }
+.report-date { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
+.report-actions { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
+.report-chip { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 500; cursor: pointer; border: none; font-family: var(--font); }
+.chip-grey { background: #f0f0ee; color: #666; }
+.chip-amber { background: var(--amber-bg); color: var(--amber); }
+.chip-grey:hover { background: #e8e8e5; }
+.chip-amber:hover { background: #fde0b0; }
+.report-review-expanded { background: #fef9f0; border: 0.5px solid #f5d78a; border-radius: 6px; padding: 10px 12px; margin: 2px 0 4px; font-size: 12px; color: var(--text-secondary); display: none; }
+.report-review-expanded.open { display: block; }
+.review-actions { display: flex; gap: 6px; margin-top: 8px; }
+.btn-approve { background: var(--green-bg); color: var(--green); border: 0.5px solid #b8e0bb; border-radius: 6px; padding: 5px 12px; font-size: 12px; font-weight: 500; cursor: pointer; font-family: var(--font); }
+.btn-reject { background: var(--red-bg); color: var(--red); border: 0.5px solid #f0b8b8; border-radius: 6px; padding: 5px 12px; font-size: 12px; font-weight: 500; cursor: pointer; font-family: var(--font); }
+
+/* Fees */
+.fees-summary-strip { display: flex; gap: 20px; padding: 10px 0 12px; border-bottom: 0.5px solid var(--border-light); margin-bottom: 10px; }
+.fees-strip-item { display: flex; flex-direction: column; gap: 2px; }
+.fees-strip-val { font-size: 13px; font-weight: 600; }
+.fees-strip-val.due { color: var(--red); }
+.fees-strip-val.accruing { color: var(--amber); }
+.fees-strip-val.paid { color: var(--green); }
+.fees-strip-label { font-size: 11px; color: var(--text-tertiary); }
+.fees-progress-bar { height: 4px; background: #f0f0ee; border-radius: 2px; overflow: hidden; display: flex; margin-bottom: 14px; }
+.bar-paid { background: var(--green); }
+.bar-accruing { background: var(--amber); }
+.fees-group-label { font-size: 11px; color: #999; font-weight: 500; margin: 12px 0 4px; padding-top: 4px; }
+.fees-group-label:first-child { margin-top: 0; padding-top: 0; }
+.fee-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 0.5px solid var(--border-light); }
+.fee-row:last-child { border-bottom: none; }
+.fee-row:hover { background: #f8f8f6; margin: 0 -18px; padding: 8px 18px; }
+.fee-name { flex: 1; font-size: 13px; }
+.fee-amount { font-weight: 500; font-size: 13px; min-width: 44px; text-align: right; }
+.fee-progress { display: flex; gap: 2px; align-items: center; padding: 0 6px; }
+.fee-dot-on { width: 7px; height: 7px; border-radius: 50%; background: #1a1a1a; }
+.fee-dot-off { width: 7px; height: 7px; border-radius: 50%; background: #e0e0dc; }
+.fee-status { font-size: 11px; font-weight: 500; min-width: 54px; }
+.fee-status.paid { color: var(--green); }
+.fee-status.accruing { color: var(--amber); }
+.fee-status.due { color: var(--red); }
+.fee-date { font-size: 11px; color: var(--text-tertiary); min-width: 44px; text-align: right; }
+.fees-link { font-size: 12px; color: var(--blue); text-decoration: none; margin-top: 12px; display: inline-block; cursor: pointer; }
+.fees-link:hover { text-decoration: underline; }
+
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: none; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: white; border-radius: 12px; width: 640px; max-height: 90vh; display: flex; flex-direction: column; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 0.5px solid #e8e8e5; }
+.modal-title { font-size: 14px; font-weight: 500; }
+.modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #999; line-height: 1; padding: 2px 4px; }
+.modal-close:hover { color: #555; }
+.modal-body { flex: 1; overflow-y: auto; padding: 20px; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 20px; border-top: 0.5px solid #e8e8e5; }
+.form-row { display: grid; gap: 12px; margin-bottom: 14px; }
+.form-row-2 { grid-template-columns: 1fr 1fr; }
+.form-row-3 { grid-template-columns: 1fr 1fr 1fr; }
+.form-row-1 { grid-template-columns: 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-label { font-size: 12px; font-weight: 500; color: var(--text-secondary); }
+.form-control { border: 0.5px solid #e8e8e5; border-radius: 6px; padding: 8px 10px; font-size: 13px; font-family: var(--font); color: var(--text-primary); outline: none; background: white; width: 100%; }
+.form-control:focus { border-color: var(--brand-purple); }
+select.form-control { appearance: none; background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23999' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; cursor: pointer; }
+textarea.form-control { resize: vertical; }
+.upload-zone { border: 1.5px dashed #e8e8e5; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; }
+.upload-zone:hover { border-color: var(--brand-purple); }
+.upload-label { font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 4px; }
+.upload-hint { font-size: 11px; color: #aaa; }
+.btn-cancel { background: transparent; border: 0.5px solid #e8e8e5; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--font); color: var(--text-secondary); }
+.btn-cancel:hover { background: #f4f4f2; }
+.modal-success { text-align: center; padding: 40px 20px; display: none; }
+.modal-success.show { display: block; }
+.success-check { width: 48px; height: 48px; border-radius: 50%; background: var(--green-bg); color: var(--green); display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 0 auto 14px; }
+.modal-success-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.modal-success-ref { font-size: 13px; color: var(--text-tertiary); }
+
+/* Placeholder */
+.placeholder-view { display: none; padding: 80px 0; text-align: center; }
+.placeholder-view.active { display: block; }
+.placeholder-view h2 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+.placeholder-view p { font-size: 13px; color: #999; }
+.back-link { font-size: 13px; color: var(--blue); cursor: pointer; display: inline-block; margin-top: 16px; }
+.back-link:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-arrow">▶</span>
+      <span>TM</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" onclick="showDashboard()">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 8.8L8 3.5L13 8.8V13.5H10V9.5H6V13.5H3V8.8Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg></span>
+        Home
+      </div>
+      <div class="nav-item" onclick="showPlaceholder('Accounts')">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1" stroke="currentColor" stroke-width="1.3"/><path d="M2 8h12" stroke="currentColor" stroke-width="1.3"/></svg></span>
+        Accounts
+      </div>
+      <div class="nav-item" onclick="showPlaceholder('Transactions')">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 5h10M3 8h7M3 11h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+        Transactions
+      </div>
+      <div class="nav-item" onclick="showPlaceholder('Reporting')">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M4 12V8M7 12V5M10 12V7M13 12V3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+        Reporting
+      </div>
+      <div class="nav-item" onclick="showPlaceholder('Compliance')">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 2L3 4.5V8c0 3 2.3 5.3 5 6 2.7-.7 5-3 5-6V4.5L8 2Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.5 8l2 2 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        Compliance
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-footer-item" onclick="showPlaceholder('Settings')">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" stroke="currentColor" stroke-width="1.3"/><path d="M13.2 8a5.2 5.2 0 0 1-.1 1l1.3 1-1.4 2.4-1.5-.6a5 5 0 0 1-1.7.9L9.5 14h-3l-.3-1.4a5 5 0 0 1-1.7-.8l-1.5.6L1.6 10l1.3-1a5.2 5.2 0 0 1 0-2L1.6 6l1.4-2.4 1.5.6a5 5 0 0 1 1.7-.9L6.5 2h3l.3 1.3a5 5 0 0 1 1.7.9l1.5-.6L14.4 6l-1.3 1c.1.3.1.6.1 1Z" stroke="currentColor" stroke-width="1.3"/></svg>
+        Settings
+      </div>
+      <div class="sidebar-footer-item">
+        <div class="avatar">VO</div>
+        Victoria O.
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-toggle">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 5h12M3 9h12M3 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="persona-switcher">
+        <button class="persona-pill active">OM  Ops Manager</button>
+        <button class="persona-pill inactive" onclick="window.location.href='index.html'">ID  Investment</button>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.5"/><path d="M12.5 12.5L15.5 15.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <div class="topbar-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2a5 5 0 0 0-5 5v3l-1.5 2.5h13L14 10V7a5 5 0 0 0-5-5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 14.5a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.5"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- Dashboard view -->
+      <div id="view-dashboard">
+
+        <!-- Page header -->
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>Hello, Victoria</h1>
+            <div class="sub">Tuesday, May 19 · Operations overview</div>
+          </div>
+          <button class="btn-primary" onclick="openModal()">+ New Instruction</button>
+        </div>
+
+        <!-- AI bar -->
+        <div class="ai-bar">
+          <span class="ai-bar-icon">✦</span>
+          <span class="ai-bar-placeholder">Ask Claude anything about your operations...</span>
+        </div>
+
+        <!-- Today's Briefing -->
+        <div class="briefing-card">
+          <div class="briefing-header">
+            <span class="briefing-label">Today's Briefing</span>
+            <span class="briefing-date">Tuesday, May 19</span>
+          </div>
+          <div class="briefing-body">
+            You have <span class="b-urgent">2 wire transfers</span> awaiting dual authorization — one deadline is <span class="b-deadline">today at 4:00 PM ET</span>. A <span class="b-urgent">$5M capital call</span> from KKR PE II is due by May 20 and still needs funding source confirmation. On the recon side, there are <span class="b-warn">3 cash breaks</span> from overnight — all timing-related, none critical. <span class="b-warn">PIMCO Fixed Income NAV remains preliminary</span> due to stale bond pricing; expect finalization by 6 PM. All other NAVs are final.
+          </div>
+        </div>
+
+        <!-- Zone: Act -->
+        <div class="zone-label">Act</div>
+        <div class="grid-2">
+
+          <!-- Pending Approvals -->
+          <div class="card">
+            <div class="widget-header">
+              <span class="widget-title">Pending Approvals</span>
+              <span class="badge badge-red">5 pending</span>
+            </div>
+            <div class="approval-row" onclick="alert('Approval detail — coming soon')">
+              <div class="dot dot-red" style="margin-top:4px"></div>
+              <div class="approval-body">
+                <div class="approval-type">Wire Transfer — USD</div>
+                <div class="approval-fund">Wellington Global Trust — Operating</div>
+              </div>
+              <div class="approval-amount">$2,450,000</div>
+              <div class="approval-chev">›</div>
+            </div>
+            <div class="approval-row" onclick="alert('Approval detail — coming soon')">
+              <div class="dot dot-red" style="margin-top:4px"></div>
+              <div class="approval-body">
+                <div class="approval-type">Capital Call — KKR PE II</div>
+                <div class="approval-fund">KKR Private Equity — Capital</div>
+              </div>
+              <div class="approval-amount">$5,000,000</div>
+              <div class="approval-chev">›</div>
+            </div>
+            <div class="approval-row" onclick="alert('Approval detail — coming soon')">
+              <div class="dot dot-amber" style="margin-top:4px"></div>
+              <div class="approval-body">
+                <div class="approval-type">FX Trade — EUR/USD</div>
+                <div class="approval-fund">Multi-Currency Operating</div>
+              </div>
+              <div class="approval-amount">€1,875,000</div>
+              <div class="approval-chev">›</div>
+            </div>
+            <div class="approval-row" onclick="alert('Approval detail — coming soon')">
+              <div class="dot dot-amber" style="margin-top:4px"></div>
+              <div class="approval-body">
+                <div class="approval-type">Distribution — Bridgewater</div>
+                <div class="approval-fund">Bridgewater Macro Fund — Distribution</div>
+              </div>
+              <div class="approval-amount">$3,200,000</div>
+              <div class="approval-chev">›</div>
+            </div>
+            <div class="approval-row" onclick="alert('Approval detail — coming soon')">
+              <div class="dot dot-grey" style="margin-top:4px"></div>
+              <div class="approval-body">
+                <div class="approval-type">Transfer — Margin Rebalance</div>
+                <div class="approval-fund">Citadel Multi-Strategy — Margin</div>
+              </div>
+              <div class="approval-amount">$1,200,000</div>
+              <div class="approval-chev">›</div>
+            </div>
+          </div>
+
+          <!-- Actions & Notifications -->
+          <div class="card">
+            <div class="widget-header">
+              <span class="widget-title">Actions &amp; Notifications</span>
+              <span class="badge badge-red">2 need attention</span>
+            </div>
+            <div class="notif-row">
+              <span class="notif-pill pill-error">Error</span>
+              <div class="notif-body">
+                <div class="notif-desc">Wire TRF-2025-00891 failed validation</div>
+                <div class="notif-fund">Wellington Global Trust</div>
+              </div>
+              <span class="notif-time">12 min ago</span>
+            </div>
+            <div class="notif-row">
+              <span class="notif-pill pill-error">Error</span>
+              <div class="notif-body">
+                <div class="notif-desc">Possible duplicate instruction detected</div>
+                <div class="notif-fund">KKR Private Equity</div>
+              </div>
+              <span class="notif-time">28 min ago</span>
+            </div>
+            <div class="notif-row">
+              <span class="notif-pill pill-warning">Warning</span>
+              <div class="notif-body">
+                <div class="notif-desc">T+1 settlement deadline approaching</div>
+                <div class="notif-fund">BlackRock US Equity</div>
+              </div>
+              <span class="notif-time">46 min ago</span>
+            </div>
+            <div class="notif-row">
+              <span class="notif-pill pill-warning">Warning</span>
+              <div class="notif-body">
+                <div class="notif-desc">KYC document expiring in 7 days</div>
+                <div class="notif-fund">Bridgewater Macro Fund</div>
+              </div>
+              <span class="notif-time">3h ago</span>
+            </div>
+            <div class="notif-row">
+              <span class="notif-pill pill-info">Info</span>
+              <div class="notif-body">
+                <div class="notif-desc">NAV finalised — PIMCO Fixed Income</div>
+                <div class="notif-fund">PIMCO Fixed Income</div>
+              </div>
+              <span class="notif-time">49 min ago</span>
+            </div>
+            <div class="notif-row">
+              <span class="notif-pill pill-info">Info</span>
+              <div class="notif-body">
+                <div class="notif-desc">FX trade settled — EUR/USD</div>
+                <div class="notif-fund">FX Settlement</div>
+              </div>
+              <span class="notif-time">1h ago</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Zone: Exceptions & Breaks -->
+        <div class="zone-label">Exceptions &amp; Breaks</div>
+        <div class="grid-2">
+
+          <!-- Reconciliation Status -->
+          <div class="card">
+            <div class="widget-header">
+              <span class="widget-title">Reconciliation Status</span>
+              <span class="badge badge-amber">4 breaks</span>
+            </div>
+            <div class="recon-row">
+              <div class="dot dot-red" style="margin-top:4px"></div>
+              <div class="recon-body">
+                <div class="recon-cat">Cash</div>
+                <div class="recon-sub">142 matched</div>
+              </div>
+              <div class="recon-pct">98.7%</div>
+              <div class="recon-status recon-break-red">3 breaks</div>
+            </div>
+            <div class="recon-row">
+              <div class="dot dot-green" style="margin-top:4px"></div>
+              <div class="recon-body">
+                <div class="recon-cat">Positions</div>
+                <div class="recon-sub">318 matched</div>
+              </div>
+              <div class="recon-pct" style="color:var(--green)">100%</div>
+              <div class="recon-status recon-clean">Clean</div>
+            </div>
+            <div class="recon-row">
+              <div class="dot dot-amber" style="margin-top:4px"></div>
+              <div class="recon-body">
+                <div class="recon-cat">Transactions</div>
+                <div class="recon-sub">256 matched</div>
+              </div>
+              <div class="recon-pct">99.2%</div>
+              <div class="recon-status recon-break-amber">1 break</div>
+            </div>
+            <div class="recon-row">
+              <div class="dot dot-green" style="margin-top:4px"></div>
+              <div class="recon-body">
+                <div class="recon-cat">NAV</div>
+                <div class="recon-sub">18 matched</div>
+              </div>
+              <div class="recon-pct" style="color:var(--green)">100%</div>
+              <div class="recon-status recon-clean">Clean</div>
+            </div>
+          </div>
+
+          <!-- Accounting Exceptions -->
+          <div class="card">
+            <div class="widget-header">
+              <span class="widget-title">Accounting Exceptions</span>
+              <span class="badge badge-red">3 open</span>
+            </div>
+            <div class="exc-row">
+              <div class="sev-chip sev-h">H</div>
+              <div class="exc-body">
+                <div class="exc-desc">Unmatched wire $2.4M — Wellington</div>
+              </div>
+              <div class="exc-age">2 days</div>
+            </div>
+            <div class="exc-row">
+              <div class="sev-chip sev-m">M</div>
+              <div class="exc-body">
+                <div class="exc-desc">Stale price — PIMCO bond portfolio</div>
+              </div>
+              <div class="exc-age">1 day</div>
+            </div>
+            <div class="exc-row">
+              <div class="sev-chip sev-m">M</div>
+              <div class="exc-body">
+                <div class="exc-desc">FX rate variance &gt; 0.5% — EUR/USD</div>
+              </div>
+              <div class="exc-age">4 hours</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Zone: Monitor -->
+        <div class="zone-label">Monitor</div>
+        <div class="grid-2">
+
+          <!-- Cash & Forecast -->
+          <div class="card">
+            <div class="widget-header">
+              <span class="widget-title">Cash &amp; Forecast</span>
+              <span style="font-size:14px;font-weight:600;color:var(--text-primary)">$284.9M</span>
+            </div>
+            <div class="tab-switcher">
+              <button class="tab-btn active" id="tab-balances" onclick="switchTab('balances')">Balances</button>
+              <button class="tab-btn" id="tab-forecast" onclick="switchTab('forecast')">7-Day Forecast</button>
+            </div>
+            <div id="tab-content-balances">
+              <div class="cash-row"><span class="cash-name">Operating — JPMorgan</span><span class="cash-ccy">USD</span><span class="cash-amount">$42.5M</span><span class="cash-delta delta-up">▲ 1.2%</span></div>
+              <div class="cash-row"><span class="cash-name">Custody — BNY Mellon</span><span class="cash-ccy">USD</span><span class="cash-amount">$128.8M</span><span class="cash-delta delta-down">▼ 0.3%</span></div>
+              <div class="cash-row"><span class="cash-name">FX Settlement — Citi</span><span class="cash-ccy">EUR</span><span class="cash-amount">$18.2M</span><span class="cash-delta delta-up">▲ 0.8%</span></div>
+              <div class="cash-row"><span class="cash-name">Capital Calls — State Street</span><span class="cash-ccy">USD</span><span class="cash-amount">$65.0M</span><span class="cash-delta delta-up">▲ 5.2%</span></div>
+              <div class="cash-row"><span class="cash-name">Distribution — Northern Trust</span><span class="cash-ccy">USD</span><span class="cash-amount">$22.1M</span><span class="cash-delta delta-down">▼ 2.1%</span></div>
+              <div class="cash-row"><span class="cash-name">Reserve — HSBC</span><span class="cash-ccy">GBP</span><span class="cash-amount">$8.4M</span><span class="cash-delta delta-flat">— 0%</span></div>
+            </div>
+            <div id="tab-content-forecast" style="display:none">
+              <table class="forecast-table">
+                <thead><tr><th>Date</th><th>Event</th><th style="text-align:right;padding-right:12px">Amount</th><th>Type</th></tr></thead>
+                <tbody>
+                  <tr><td class="fc-date">May 20</td><td>KKR PE II Capital Call</td><td class="fc-amount fc-outflow">$5,000,000</td><td class="fc-type">Outflow</td></tr>
+                  <tr><td class="fc-date">May 21</td><td>Wellington Distribution</td><td class="fc-amount fc-outflow">$2,450,000</td><td class="fc-type">Outflow</td></tr>
+                  <tr><td class="fc-date">May 22</td><td>FX Settlement EUR/USD</td><td class="fc-amount fc-neutral">$1,875,000</td><td class="fc-type">Settlement</td></tr>
+                  <tr><td class="fc-date">May 23</td><td>BNY Custody Fee Q2</td><td class="fc-amount fc-neutral">$320,000</td><td class="fc-type">Fee</td></tr>
+                  <tr><td class="fc-date">May 24</td><td>Bridgewater Distribution</td><td class="fc-amount fc-outflow">$3,200,000</td><td class="fc-type">Outflow</td></tr>
+                  <tr><td class="fc-date">May 26</td><td>Operating Account Top-up</td><td class="fc-amount fc-inflow">$10,000,000</td><td class="fc-type">Transfer</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- General Accounting / NAV -->
+          <div class="card">
+            <div class="widget-header">
+              <span class="widget-title">General Accounting</span>
+              <span class="widget-sub" style="color:var(--amber)">4/6 NAVs final</span>
+            </div>
+            <table class="nav-table">
+              <thead>
+                <tr>
+                  <th>Fund</th>
+                  <th style="text-align:right;padding-right:12px">NAV/Unit</th>
+                  <th style="text-align:right;padding-right:12px">Change</th>
+                  <th>Status</th>
+                  <th style="text-align:right">Docs</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td class="nav-fund">Wellington Global Trust</td><td class="nav-unit">$1,247.83</td><td class="nav-change nav-up">+0.12%</td><td class="nav-status nav-final">Final</td><td class="nav-docs">3</td></tr>
+                <tr><td class="nav-fund">BlackRock US Equity</td><td class="nav-unit">$892.41</td><td class="nav-change nav-down">−0.34%</td><td class="nav-status nav-final">Final</td><td class="nav-docs">2</td></tr>
+                <tr><td class="nav-fund">PIMCO Fixed Income</td><td class="nav-unit">$104.56</td><td class="nav-change nav-up">+0.08%</td><td class="nav-status nav-prelim">Preliminary</td><td class="nav-docs">1</td></tr>
+                <tr><td class="nav-fund">Citadel Multi-Strategy</td><td class="nav-unit">$2,156.72</td><td class="nav-change nav-up">+0.45%</td><td class="nav-status nav-final">Final</td><td class="nav-docs">4</td></tr>
+                <tr><td class="nav-fund">Bridgewater Macro Fund</td><td class="nav-unit">$3,421.19</td><td class="nav-change nav-down">−0.18%</td><td class="nav-status nav-prelim">Estimated</td><td class="nav-docs-none">—</td></tr>
+                <tr><td class="nav-fund">KKR Private Equity II</td><td class="nav-unit">$1,089.00</td><td class="nav-change nav-flat">+0%</td><td class="nav-status nav-final">Final</td><td class="nav-docs">2</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Monitor continued -->
+        <div class="grid-2" style="margin-top:12px">
+
+          <!-- Operations Reports -->
+          <div class="card">
+            <div class="widget-header">
+              <span class="widget-title">Operations Reports</span>
+              <span class="badge badge-blue">6 reports</span>
+            </div>
+
+            <div class="report-group-label">Monthly Close</div>
+            <div class="report-row">
+              <div class="dot dot-green" style="margin-top:3px"></div>
+              <div class="report-body"><div class="report-name">Month-End Trial Balance</div></div>
+              <div class="report-actions"><button class="report-chip chip-grey">EXCEL ↓</button></div>
+            </div>
+            <div class="report-row" id="row-nav-recon">
+              <div class="dot dot-amber" style="margin-top:3px"></div>
+              <div class="report-body"><div class="report-name">NAV Reconciliation Report</div></div>
+              <div class="report-actions">
+                <button class="report-chip chip-grey">PDF ↓</button>
+                <button class="report-chip chip-amber" onclick="toggleReview('nav-recon')">Review</button>
+              </div>
+            </div>
+            <div class="report-review-expanded" id="review-nav-recon">
+              <strong>Review required</strong> — NAV Reconciliation Report needs sign-off before distribution.
+              <div class="review-actions">
+                <button class="btn-approve" onclick="approveReport('nav-recon')">Approve</button>
+                <button class="btn-reject" onclick="rejectReport('nav-recon')">Reject</button>
+              </div>
+            </div>
+            <div class="report-row">
+              <div class="dot dot-green" style="margin-top:3px"></div>
+              <div class="report-body"><div class="report-name">Fee Accrual Summary — Q2</div><div class="report-date">May 1</div></div>
+              <div class="report-actions"><button class="report-chip chip-grey">EXCEL ↓</button></div>
+            </div>
+
+            <div class="report-group-label">Daily</div>
+            <div class="report-row">
+              <div class="dot dot-green" style="margin-top:3px"></div>
+              <div class="report-body"><div class="report-name">Cash Position Report</div><div class="report-date">Today</div></div>
+              <div class="report-actions"><button class="report-chip chip-grey">PDF ↓</button></div>
+            </div>
+            <div class="report-row" id="row-trade-settle">
+              <div class="dot dot-amber" style="margin-top:3px"></div>
+              <div class="report-body"><div class="report-name">Trade Settlement Summary</div><div class="report-date">Today</div></div>
+              <div class="report-actions">
+                <button class="report-chip chip-amber" onclick="toggleReview('trade-settle')">Review</button>
+                <button class="report-chip chip-grey">EXCEL ↓</button>
+              </div>
+            </div>
+            <div class="report-review-expanded" id="review-trade-settle">
+              <strong>Review required</strong> — Trade Settlement Summary needs sign-off before distribution.
+              <div class="review-actions">
+                <button class="btn-approve" onclick="approveReport('trade-settle')">Approve</button>
+                <button class="btn-reject" onclick="rejectReport('trade-settle')">Reject</button>
+              </div>
+            </div>
+
+            <div class="report-group-label">Regulatory</div>
+            <div class="report-row">
+              <div class="dot dot-grey" style="margin-top:3px"></div>
+              <div class="report-body"><div class="report-name">AML Transaction Monitoring</div></div>
+              <div class="report-actions"><span style="font-size:12px;color:#ccc">—</span></div>
+            </div>
+          </div>
+
+          <!-- Fees & Expenses -->
+          <div class="card">
+            <div class="widget-header">
+              <span class="widget-title">Fees &amp; Expenses</span>
+              <span style="font-size:14px;font-weight:600;color:var(--text-primary)">$11.3M total</span>
+            </div>
+            <div class="fees-summary-strip">
+              <div class="fees-strip-item"><div class="fees-strip-val due">$2.0M</div><div class="fees-strip-label">Due</div></div>
+              <div class="fees-strip-item"><div class="fees-strip-val accruing">$3.6M</div><div class="fees-strip-label">Accruing</div></div>
+              <div class="fees-strip-item"><div class="fees-strip-val paid">$5.7M</div><div class="fees-strip-label">Paid</div></div>
+              <div class="fees-strip-item"><div class="fees-strip-val" style="color:var(--text-tertiary)">$5.6M</div><div class="fees-strip-label">Remaining</div></div>
+            </div>
+            <!-- paid=50.4%, accruing=31.9% of $11.3M -->
+            <div class="fees-progress-bar">
+              <div class="bar-paid" style="width:50.4%"></div>
+              <div class="bar-accruing" style="width:31.9%"></div>
+            </div>
+
+            <div class="fees-group-label">Management Fees</div>
+            <div class="fee-row">
+              <span class="fee-name">Wellington — Q1 Mgmt</span>
+              <span class="fee-amount">$1.9M</span>
+              <span class="fee-progress"><span class="fee-dot-on"></span><span class="fee-dot-on"></span><span class="fee-dot-on"></span><span class="fee-dot-off"></span><span class="fee-dot-off"></span></span>
+              <span class="fee-status due">Due</span>
+              <span class="fee-date">May 13</span>
+            </div>
+            <div class="fee-row">
+              <span class="fee-name">BlackRock — Q1 Mgmt</span>
+              <span class="fee-amount">$1.2M</span>
+              <span class="fee-progress"><span class="fee-dot-on"></span><span class="fee-dot-on"></span><span class="fee-dot-on"></span><span class="fee-dot-on"></span><span class="fee-dot-on"></span></span>
+              <span class="fee-status paid">Paid</span>
+              <span class="fee-date">Apr 30</span>
+            </div>
+            <div class="fee-row">
+              <span class="fee-name">PIMCO — Q1 Mgmt</span>
+              <span class="fee-amount">$780K</span>
+              <span class="fee-progress"><span class="fee-dot-on"></span><span class="fee-dot-on"></span><span class="fee-dot-on"></span><span class="fee-dot-off"></span><span class="fee-dot-off"></span></span>
+              <span class="fee-status accruing">Accruing</span>
+              <span class="fee-date">Jun 15</span>
+            </div>
+
+            <div class="fees-group-label">Performance Fees</div>
+            <div class="fee-row">
+              <span class="fee-name">Citadel — 2024 Incentive</span>
+              <span class="fee-amount">$4.2M</span>
+              <span class="fee-progress"><span class="fee-dot-on"></span><span class="fee-dot-on"></span><span class="fee-dot-on"></span><span class="fee-dot-on"></span><span class="fee-dot-on"></span></span>
+              <span class="fee-status paid">Paid</span>
+              <span class="fee-date">Mar 31</span>
+            </div>
+            <div class="fee-row">
+              <span class="fee-name">Bridgewater — 2024</span>
+              <span class="fee-amount">$2.8M</span>
+              <span class="fee-progress"><span class="fee-dot-on"></span><span class="fee-dot-on"></span><span class="fee-dot-on"></span><span class="fee-dot-off"></span><span class="fee-dot-off"></span></span>
+              <span class="fee-status accruing">Accruing</span>
+              <span class="fee-date">Jun 30</span>
+            </div>
+
+            <div class="fees-group-label">Custody &amp; Admin</div>
+            <div class="fee-row">
+              <span class="fee-name">BNY Mellon — Custody Q1</span>
+              <span class="fee-amount">$320K</span>
+              <span class="fee-progress"><span class="fee-dot-on"></span><span class="fee-dot-on"></span><span class="fee-dot-on"></span><span class="fee-dot-on"></span><span class="fee-dot-on"></span></span>
+              <span class="fee-status paid">Paid</span>
+              <span class="fee-date">Apr 15</span>
+            </div>
+            <div class="fee-row">
+              <span class="fee-name">State Street — Admin Q1</span>
+              <span class="fee-amount">$185K</span>
+              <span class="fee-progress"><span class="fee-dot-on"></span><span class="fee-dot-on"></span><span class="fee-dot-off"></span><span class="fee-dot-off"></span><span class="fee-dot-off"></span></span>
+              <span class="fee-status due">Due</span>
+              <span class="fee-date">May 10</span>
+            </div>
+
+            <a class="fees-link" onclick="alert('Full Fees &amp; Expenses page — coming soon')">View full breakdown →</a>
+          </div>
+        </div>
+
+      </div><!-- /view-dashboard -->
+
+      <!-- Placeholder view -->
+      <div id="view-placeholder" class="placeholder-view">
+        <h2 id="placeholder-title">Section</h2>
+        <p>This section is coming soon.</p>
+        <div class="back-link" onclick="showDashboard()">← Back to dashboard</div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- New Instruction Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">New Instruction</span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="modal-body">
+      <div class="form-row form-row-2">
+        <div class="form-group">
+          <label class="form-label">Instruction Type</label>
+          <select class="form-control"><option>Wire Transfer</option><option>Capital Call</option><option>FX Trade</option><option>Journal Entry</option><option>Distribution</option><option>Account Transfer</option><option>Margin Call</option><option>Redemption</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Priority</label>
+          <select class="form-control"><option>Normal</option><option>Urgent</option><option>Same Day</option></select>
+        </div>
+      </div>
+      <div class="form-row form-row-2">
+        <div class="form-group">
+          <label class="form-label">Account</label>
+          <select class="form-control"><option>Operating — JPMorgan</option><option>Custody — BNY Mellon</option><option>FX Settlement — Citi</option><option>Capital Calls — State Street</option><option>Distribution — Northern Trust</option><option>Reserve — HSBC</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Counterparty / Fund</label>
+          <input type="text" class="form-control" placeholder="e.g. Wellington Global Trust">
+        </div>
+      </div>
+      <div class="form-row form-row-3">
+        <div class="form-group">
+          <label class="form-label">Currency</label>
+          <select class="form-control"><option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amount</label>
+          <input type="number" class="form-control" placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Value Date</label>
+          <input type="date" class="form-control" value="2026-05-19">
+        </div>
+      </div>
+      <div class="form-row form-row-1">
+        <div class="form-group">
+          <label class="form-label">Settlement Method</label>
+          <select class="form-control"><option>DTC</option><option>SWIFT</option><option>FedWire</option><option>Internal</option></select>
+        </div>
+      </div>
+      <div class="form-row form-row-2">
+        <div class="form-group">
+          <label class="form-label">Beneficiary</label>
+          <input type="text" class="form-control" placeholder="Beneficiary name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Reference / Memo</label>
+          <input type="text" class="form-control" placeholder="Reference or memo">
+        </div>
+      </div>
+      <div class="form-row form-row-1">
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <textarea class="form-control" rows="3" placeholder="Additional notes or instructions..."></textarea>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Attach Instruction Letter (Optional)</label>
+        <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+          <input type="file" id="file-input" style="display:none" accept=".pdf">
+          <div style="font-size:24px;color:#ddd;margin-bottom:8px">↑</div>
+          <div class="upload-label">Upload PDF</div>
+          <div class="upload-hint">Attach the authorising instruction letter from your counterparty</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-success" id="modal-success">
+      <div class="success-check">✓</div>
+      <div class="modal-success-title">Instruction submitted</div>
+      <div class="modal-success-ref">Reference TRF-2025-0043</div>
+    </div>
+    <div class="modal-footer" id="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="submitInstruction()">Submit Instruction</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openModal() {
+  document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('modal-body').style.display = '';
+  document.getElementById('modal-success').classList.remove('show');
+  document.getElementById('modal-footer').style.display = '';
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+function submitInstruction() {
+  document.getElementById('modal-body').style.display = 'none';
+  document.getElementById('modal-footer').style.display = 'none';
+  document.getElementById('modal-success').classList.add('show');
+  setTimeout(closeModal, 2200);
+}
+
+function switchTab(tab) {
+  ['balances','forecast'].forEach(t => {
+    document.getElementById('tab-content-' + t).style.display = t === tab ? '' : 'none';
+    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+  });
+}
+
+function toggleReview(id) {
+  document.getElementById('review-' + id).classList.toggle('open');
+}
+function approveReport(id) {
+  const el = document.getElementById('review-' + id);
+  el.innerHTML = '<span style="color:var(--green);font-weight:500">✓ Approved — report cleared for distribution</span>';
+  el.style.background = 'var(--green-bg)';
+  el.style.borderColor = '#b8e0bb';
+  setTimeout(() => el.classList.remove('open'), 2000);
+}
+function rejectReport(id) {
+  const el = document.getElementById('review-' + id);
+  el.innerHTML = '<span style="color:var(--red);font-weight:500">✕ Rejected — returned for revision</span>';
+  el.style.background = 'var(--red-bg)';
+  el.style.borderColor = '#f0b8b8';
+  setTimeout(() => el.classList.remove('open'), 2000);
+}
+
+function showDashboard() {
+  document.getElementById('view-dashboard').style.display = '';
+  document.getElementById('view-placeholder').classList.remove('active');
+  document.querySelectorAll('.nav-item').forEach((el, i) => el.classList.toggle('active', i === 0));
+}
+function showPlaceholder(section) {
+  document.getElementById('placeholder-title').textContent = section;
+  document.getElementById('view-dashboard').style.display = 'none';
+  document.getElementById('view-placeholder').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+}
+</script>
+</body>
+</html>
